@@ -79,13 +79,17 @@ int interpreter(char *command_args[], int args_size) {
         {
             char *execArgs[MAX_ARGS_SIZE + 1]; // leave space for NULL
             int i;
-            for (i = 1; i < args_size - 1; i++) // parse commands
+            for (i = 0; i < args_size - 1; i++) // parse commands
             {
                 execArgs[i] = command_args[i + 1]; // skip run
             }
             execArgs[i] = NULL;
-            // ADD ERROR HADLING FOR EXECVP FAILURE
             execvp(execArgs[0], execArgs); // execute command
+
+            if (execvp(execArgs[0], execArgs) == -1) { // failure in exec
+                badcommand(); 
+                exit(1); 
+            }
 
             exit(0); // terminate child process
         }
