@@ -70,6 +70,30 @@ int interpreter(char *command_args[], int args_size) {
             return badcommand();
         return echo(command_args[1]);
 
+    }  else if (strcmp(command_args[0], "run") == 0) {
+        if (args_size < 2)
+            return badcommand();
+        int pid = fork();
+
+        if (pid == 0) // child process
+        {
+            char *execArgs[MAX_ARGS_SIZE + 1]; // leave space for NULL
+            int i;
+            for (i = 1; i < args_size - 1; i++) // parse commands
+            {
+                execArgs[i] = command_args[i + 1]; // skip run
+            }
+            execArgs[i] = NULL;
+            // ADD ERROR HADLING FOR EXECVP FAILURE
+            execvp(execArgs[0], execArgs); // execute command
+
+            exit(0); // terminate child process
+        }
+        else if (pid > 0) // parent process
+        {
+            wait(NULL); // wait for child to finish
+            return 0;
+        }
     } else
         return badcommand();
 }

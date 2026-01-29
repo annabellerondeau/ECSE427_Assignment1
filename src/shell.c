@@ -24,13 +24,13 @@ int main(int argc, char *argv[]) {
     //init shell memory
     mem_init();
     while(1) {	
-        if (isatty(fileno(stdin)))
+        if (isatty(fileno(stdin))) // print prompt in interactive mode
         {
             printf("%c ", prompt);
         }						
         // here you should check the unistd library 
         // so that you can find a way to not display $ in the batch mode
-        if (fgets(userInput, MAX_USER_INPUT-1, stdin) == NULL)
+        if (fgets(userInput, MAX_USER_INPUT-1, stdin) == NULL) // break on EOF
         {
             break;
         }
