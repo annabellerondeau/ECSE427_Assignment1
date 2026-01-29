@@ -23,6 +23,7 @@ int set(char *var, char *value);
 int print(char *var);
 int source(char *script);
 int badcommandFileDoesNotExist();
+int echo(char *text);
 
 // Interpret commands and their arguments
 int interpreter(char *command_args[], int args_size) {
