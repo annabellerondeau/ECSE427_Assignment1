@@ -65,8 +65,7 @@ int interpreter(char *command_args[], int args_size) {
         return source(command_args[1]);
 
     } else if (strcmp(command_args[0], "echo") == 0) {
-        if (args_size != 1)
-            printf("Echo command called with argument : %s\n", command_args[1]);
+        if (args_size != 2)
             return badcommand();
         return echo(command_args[1]);
 
