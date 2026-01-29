@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
         }						
         // here you should check the unistd library 
         // so that you can find a way to not display $ in the batch mode
-        if (fgets(userInput, MAX_USER_INPUT-1, stdin) = NULL)
+        if (fgets(userInput, MAX_USER_INPUT-1, stdin) == NULL)
         {
             break;
         }
