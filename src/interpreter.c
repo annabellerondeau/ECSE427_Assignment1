@@ -120,15 +120,12 @@ int source(char *script) {
         return badcommandFileDoesNotExist();
     }
 
-    fgets(line, MAX_USER_INPUT - 1, p);
-    while (1) {
+    //fgets(line, MAX_USER_INPUT - 1, p);
+    while (fgets(line, MAX_USER_INPUT - 1, p) != NULL) {
         errCode = parseInput(line);     // which calls interpreter()
         memset(line, 0, sizeof(line));
 
         if (feof(p)) {
-            break;
-        }
-        if (fgets(line, MAX_USER_INPUT - 1, p) == NULL) {
             break;
         }
     }
