@@ -128,7 +128,9 @@ int source(char *script) {
         if (feof(p)) {
             break;
         }
-        fgets(line, MAX_USER_INPUT - 1, p);
+        if (fgets(line, MAX_USER_INPUT - 1, p) == nullptr) {
+            break;
+        }
     }
 
     fclose(p);
