@@ -64,6 +64,11 @@ int interpreter(char *command_args[], int args_size) {
             return badcommand();
         return source(command_args[1]);
 
+    } else if (strcmp(command_args[0], "echo") == 0) {
+        if (args_size != 1)
+            return badcommand();
+        return echo(command_args[1]);
+
     } else
         return badcommand();
 }
@@ -128,4 +133,20 @@ int source(char *script) {
     fclose(p);
 
     return errCode;
+}
+
+int echo (char *text) 
+{
+    int errCode = 0;
+    if (text[0] == '$') 
+    {
+        char *varName = text + 1; // skip $
+        char *value = mem_get_value(varName); // get variable value
+        printf("%s\n", value);
+    } 
+    else 
+    {
+        printf("%s\n", text); // print the text
+    }
+    return 0;
 }
