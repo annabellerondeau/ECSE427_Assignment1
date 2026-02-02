@@ -214,6 +214,7 @@ int my_mkdir(char filename[]){ // parse for alphanumeric
     if (filename[0] != '$'){
         if (isAlphaNumeric(filename)){
             mkdir(filename, 0777);
+            printf("%s\n", "DEBUG SUCCESFUL MKDIR");
             return 0;}
             else{
                 printf("%s\n", "Bad command: my_mkdir");
@@ -232,7 +233,10 @@ int my_mkdir(char filename[]){ // parse for alphanumeric
     // is it a single token?
     if (isAlphaNumeric(value)){
     mkdir(value, 0777);
-    return 0;}
+                printf("%s\n", "DEBUG SUCCESFUL MKDIR");
+
+    return 0;
+    }
     else{
         printf("%s\n", "Bad command: my_mkdir");
         return 1;
