@@ -111,6 +111,7 @@ int interpreter(char *command_args[], int args_size) {
         if (args_size != 1) return badcommand();
         return my_ls();
     } else if (strcmp(command_args[0], "my_mkdir") == 0) {
+        printf("command='%s' args_size=%d\n", command_args[0], args_size);
         if (args_size != 2) return badcommand();
         return my_mkdir(command_args[1]);
     } else if (strcmp(command_args[0], "my_touch") == 0) {
