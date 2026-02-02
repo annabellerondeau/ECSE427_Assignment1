@@ -30,9 +30,9 @@ int source(char *script);
 int badcommandFileDoesNotExist();
 int echo(char *text);
 // Adding a break for mine - Remove later
-int my_mkdir(char filename[])
-int my_cd(char *dirname)
-int my_touch(char *filename)
+int my_mkdir(char filename[]);
+int my_cd(char *dirname);
+int my_touch(char *filename);
 int isAlphaNumeric(char word[]);
 int tokenEnding(char c);
 
