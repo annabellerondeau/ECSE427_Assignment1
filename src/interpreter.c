@@ -204,7 +204,7 @@ int echo (char *text)
 }
 
 int my_ls(){
-    char *tmp[100];
+    char *tmp[1000];
     int w = 0;
     int p = 0;
     DIR *currentDirectory= opendir(".");
@@ -216,18 +216,21 @@ int my_ls(){
     closedir(currentDirectory); // to avoid handling errors
 
     // step 2: sort tmp
-    //qsort(tmp, w, size_t size, prioritization)
+
+    qsort(tmp, w, sizeof(tmp[0]), prioritization);
 
     while(w!=p){
         printf("%s\n", tmp[p++]);
+        //free(tmp[p++]); //necessary ?
     }
     return 0;
 }
 
+
 // int (*compar)(const void *, const void *)
-//int prioritization(const void *c1, const void *c2){
-//    return strcmp((const char)c1,(const char) c2);
-//}
+int prioritization(const void *c1, const void *c2){
+    return strcmp(*(const char **) c1,*(const char **)c2); // we cast c1
+}
 
 int my_mkdir(char filename[]){ // parse for alphanumeric
 
