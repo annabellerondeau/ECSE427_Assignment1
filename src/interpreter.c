@@ -208,12 +208,30 @@ int echo (char *text)
 }
 
 int my_ls(){
-//    DIR *currentDirectory= opendir(".");
-//
-//    char *allFiles[10];
+    char *tmp[100];
+    int w = 0;
+    int p = 0;
+    DIR *currentDirectory= opendir(".");
+    struct dirent *output = readdir(currentDirectory);
+    while (output!= NULL){ // "It returns a null pointer upon reaching the end of the directory stream."
+        tmp[w++] = strdup(output->d_name);
+        output = readdir(currentDirectory);
+    }
+    closedir(currentDirectory); // to avoid handling errors
 
+    // step 2: sort tmp
+    //qsort(tmp, w, size_t size, prioritization)
+
+    while(w!=p){
+        printf("%s\n", tmp[p++]);
+    }
     return 0;
 }
+
+// int (*compar)(const void *, const void *)
+//int prioritization(const void *c1, const void *c2){
+//    return strcmp((const char)c1,(const char) c2);
+//}
 
 int my_mkdir(char filename[]){ // parse for alphanumeric
 
