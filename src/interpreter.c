@@ -37,8 +37,10 @@ int isAlphaNumeric(char word[]);
 // Interpret commands and their arguments
 int interpreter(char *command_args[], int args_size) {
     int i;
+    printf("DEBUG 1\n");
 
     if (args_size < 1 || args_size > MAX_ARGS_SIZE) {
+        printf("args_size=%d\n", args_size);
         return badcommand();
     }
 
@@ -121,6 +123,7 @@ int interpreter(char *command_args[], int args_size) {
        if (args_size != 2) return badcommand();
        return my_cd(command_args[1]);
     }else
+        printf("DEBUG 2 - DID NOT MATCH\n");
         return badcommand();
 }
 
