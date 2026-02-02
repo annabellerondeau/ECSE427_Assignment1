@@ -36,7 +36,7 @@ int my_cd(char *dirname);
 int my_touch(char *filename);
 int isAlphaNumeric(char word[]);
 int tokenEnding(char c);
-int prioritization(const void *c1, const void *c2)
+int prioritization(const void *c1, const void *c2);
 
 // Interpret commands and their arguments
 int interpreter(char *command_args[], int args_size) {
