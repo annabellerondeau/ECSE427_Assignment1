@@ -122,9 +122,9 @@ int interpreter(char *command_args[], int args_size) {
     }else if (strcmp(command_args[0], "my_cd") == 0) {
        if (args_size != 2) return badcommand();
        return my_cd(command_args[1]);
-    }else
+    }else{
         printf("DEBUG 2 - DID NOT MATCH\n");
-        return badcommand();
+        return badcommand();}
 }
 
 int help() {
