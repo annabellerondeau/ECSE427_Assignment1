@@ -80,31 +80,62 @@ int wordEnding(char c) {
 //    return errorCode;
 //}
 
-// we ignore spaces after
-int parseInput(char inp[]) {
+//int parseInput(char inp[]) {
+//
+//    char tmp[200], *words[100];
+//    int ix = 0, w = 0;
+//    int wordlen;
+//    int errorCode;
+//
+//    bool end = false;
+//    int instructionCount = 0;
+//
+//    while (!end && instructionCount < 10){
+//
+//        for (ix = 0; inp[ix] == ' ' && ix < 1000; ix++); // skip white spaces (starts at first index not whitespace)
+//        while (inp[ix] != '\n' && inp[ix] != '\0' && inp[ix] != ';' && instructionCount < 10 && ix < 1000) {
+//            // extract a word
+//            for (wordlen = 0; !wordEnding(inp[ix]) && instructionCount < 10 && ix < 1000; ix++, wordlen++) {
+//                tmp[wordlen] = inp[ix];
+//            }
+//            tmp[wordlen] = '\0'; // break
+//            words[w] = strdup(tmp);
+//            w++;
+//            if (inp[ix] == '\0') end = true;
+//            ix++;
+//            if (inp[ix] == ';') instructionCount++;
+//
+//            errorCode = interpreter(words, w);
+//        }
+//        return errorCode;
+//    }
+//
+//}
 
+int parseInput(char inp[]) {
     char tmp[200], *words[100];
     int ix = 0, w = 0;
     int wordlen;
     int errorCode;
-    bool end = false;
-    int instructionCount = 0;
+    int numberOfCommands = 0;
 
-    while (!end && instructionCount < 10){
-        for (ix = 0; inp[ix] == ' ' && ix < 1000; ix++); // skip white spaces (starts at first index not whitespace)
-        while (inp[ix] != '\n' && inp[ix] != '\0' && inp[ix] != ';' && instructionCount < 10 && ix < 1000) {
+    while (inp[ix] != '\0' && numberOfCommands < 10){ // Check if string of commands is done
+        w=0;
+        for (; inp[ix] == ' ' && ix < 1000; ix++); // skip white spaces
+        while (inp[ix] != '\n' && inp[ix] != '\0' && inp[ix]!= ';' && numberOfCommands< 10 && ix < 1000) {
             // extract a word
-            for (wordlen = 0; !wordEnding(inp[ix]) && instructionCount < 10 && ix < 1000; ix++, wordlen++) {
+            for (wordlen = 0; !wordEnding(inp[ix]) && inp[ix]!= ';' && numberOfCommands< 10 && ix < 1000; ix++, wordlen++) {
                 tmp[wordlen] = inp[ix];
             }
-            tmp[wordlen] = '\0'; // break
+            tmp[wordlen] = '\0';
             words[w] = strdup(tmp);
             w++;
-            if (inp[ix] == '\0') end = true;
+            if (inp[ix] == '\0') break;
             ix++;
-            if (inp[ix] == ';') instructionCount++;
         }
+        errorCode = interpreter(words, w);
+        numberOfCommands++;
+        if (inp[ix] == ';') ix++;
     }
-    errorCode = interpreter(words, w);
-    return errorCode;
+    return errorCode; // how to detect error ?
 }
