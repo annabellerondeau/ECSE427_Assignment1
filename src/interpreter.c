@@ -24,6 +24,11 @@ int print(char *var);
 int source(char *script);
 int badcommandFileDoesNotExist();
 int echo(char *text);
+// Adding a break for mine - Remove later
+int my_ls();
+int my_cd();
+int my_touch();
+int my_mkdir();
 
 // Interpret commands and their arguments
 int interpreter(char *command_args[], int args_size) {
@@ -177,4 +182,16 @@ int echo (char *text)
         printf("%s\n", text); // print the text
     }
     return 0;
+}
+
+int my_touch(char *filename)
+{
+    FILE *newFile ;
+    newFile = fopen(filename, "w");
+    fclose(newFile);
+
+//    if (newFile == NULL){
+//        return 1;
+//    }
+    return 0; // return error code
 }
