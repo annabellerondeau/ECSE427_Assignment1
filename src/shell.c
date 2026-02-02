@@ -67,7 +67,6 @@ int parseInput(char inp[]) {
             for (wordlen = 0; !wordEnding(inp[ix]) && inp[ix]!= ';' && numberOfCommands< 10 && ix < 1000; ix++, wordlen++) {
                 tmp[wordlen] = inp[ix];
             }
-            printf("DEBUG: Read word: [%s]\n", tmp);
             tmp[wordlen] = '\0';
             words[w] = strdup(tmp);
             w++;

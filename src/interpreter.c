@@ -40,10 +40,8 @@ int tokenEnding(char c);
 // Interpret commands and their arguments
 int interpreter(char *command_args[], int args_size) {
     int i;
-    printf("DEBUG 1\n");
 
     if (args_size < 1 || args_size > MAX_ARGS_SIZE) {
-        printf("args_size=%d\n", args_size);
         return badcommand();
     }
 
@@ -116,7 +114,6 @@ int interpreter(char *command_args[], int args_size) {
         if (args_size != 1) return badcommand();
         return my_ls();
     } else if (strcmp(command_args[0], "my_mkdir") == 0) {
-        printf("command='%s' args_size=%d\n", command_args[0], args_size);
         if (args_size != 2) return badcommand();
         return my_mkdir(command_args[1]);
     } else if (strcmp(command_args[0], "my_touch") == 0) {
@@ -126,7 +123,6 @@ int interpreter(char *command_args[], int args_size) {
        if (args_size != 2) return badcommand();
        return my_cd(command_args[1]);
     }else{
-        printf("DEBUG 2 - DID NOT MATCH\n");
         return badcommand();}
 }
 
@@ -239,7 +235,6 @@ int my_mkdir(char filename[]){ // parse for alphanumeric
     if (filename[0] != '$'){
         if (isAlphaNumeric(filename)){
             mkdir(filename, 0777);
-            printf("%s\n", "DEBUG SUCCESFUL MKDIR");
             return 0;}
             else{
                 printf("%s\n", "Bad command: my_mkdir");
@@ -258,8 +253,6 @@ int my_mkdir(char filename[]){ // parse for alphanumeric
     // is it a single token?
     if (isAlphaNumeric(value)){
     mkdir(value, 0777);
-                printf("%s\n", "DEBUG SUCCESFUL MKDIR");
-
     return 0;
     }
     else{
