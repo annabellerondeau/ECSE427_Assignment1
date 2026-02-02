@@ -3,6 +3,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <ctype.h>
+#include <sys/stat.h>
 #include "shellmemory.h"
 #include "shell.h"
 
@@ -200,13 +201,13 @@ int echo (char *text)
     return 0;
 }
 
-int my_ls(){
-    DIR *currentDirectory= opendir(".");
-
-    char *allFiles[10];
-
-    return 0;
-}
+//int my_ls(){
+//    DIR *currentDirectory= opendir(".");
+//
+//    char *allFiles[10];
+//
+//    return 0;
+//}
 
 int my_mkdir(char filename[]){ // parse for alphanumeric
 
