@@ -222,7 +222,6 @@ int my_ls(){
 
     while(w!=p){
         printf("%s\n", tmp[p++]);
-        //free(tmp[p++]); //necessary ?
     }
     return 0;
 }
@@ -256,8 +255,8 @@ int my_mkdir(char filename[]){ // parse for alphanumeric
     }
     // is it a single token?
     if (isAlphaNumeric(value)){
-    mkdir(value, 0777);
-    return 0;
+        mkdir(value, 0777);
+        return 0;
     }
     else{
         printf("%s\n", "Bad command: my_mkdir");
