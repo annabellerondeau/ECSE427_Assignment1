@@ -30,6 +30,7 @@ int source(char *script);
 int badcommandFileDoesNotExist();
 int echo(char *text);
 // Adding a break for mine - Remove later
+int my_ls();
 int my_mkdir(char filename[]);
 int my_cd(char *dirname);
 int my_touch(char *filename);
@@ -206,13 +207,13 @@ int echo (char *text)
     return 0;
 }
 
-//int my_ls(){
+int my_ls(){
 //    DIR *currentDirectory= opendir(".");
 //
 //    char *allFiles[10];
-//
-//    return 0;
-//}
+
+    return 0;
+}
 
 int my_mkdir(char filename[]){ // parse for alphanumeric
 
