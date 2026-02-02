@@ -27,12 +27,8 @@ int source(char *script);
 int badcommandFileDoesNotExist();
 int echo(char *text);
 // Adding a break for mine - Remove later
-int my_ls();
-int my_cd();
-int my_touch();
-int my_mkdir();
-int tokenEnding();
 int isAlphaNumeric(char word[]);
+int tokenEnding(char c);
 
 // Interpret commands and their arguments
 int interpreter(char *command_args[], int args_size) {
