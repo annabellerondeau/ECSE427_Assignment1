@@ -52,66 +52,6 @@ int wordEnding(char c) {
 
 // There will be at most 10 chained instructions.
 // Semicolon is the only accepted separator
-//int parseInput(char inp[]) {
-//
-//    char tmp[200], *words[100];
-//    int ix = 0, w = 0;
-//    int wordlen;
-//    int errorCode;
-//    bool end = false;
-//    int instructionCount = 0;
-//
-//    while (!end && instructionCount!=10){
-//        for (ix = 0; inp[ix] == ' ' && ix < 1000; ix++); // skip white spaces (starts at first index not whitespace)
-//        while (inp[ix] != '\n' && inp[ix] != '\0' && ix < 1000) {
-//            // extract a word
-//            for (wordlen = 0; !wordEnding(inp[ix]) && ix < 1000; ix++, wordlen++) {
-//                tmp[wordlen] = inp[ix];
-//            }
-//            tmp[wordlen] = '\0';
-//            words[w] = strdup(tmp);
-//            w++;
-//            if (inp[ix] == '\0') break;
-//            ix++;
-//        }
-//        instructionCount++;
-//    }
-//    errorCode = interpreter(words, w);
-//    return errorCode;
-//}
-
-//int parseInput(char inp[]) {
-//
-//    char tmp[200], *words[100];
-//    int ix = 0, w = 0;
-//    int wordlen;
-//    int errorCode;
-//
-//    bool end = false;
-//    int instructionCount = 0;
-//
-//    while (!end && instructionCount < 10){
-//
-//        for (ix = 0; inp[ix] == ' ' && ix < 1000; ix++); // skip white spaces (starts at first index not whitespace)
-//        while (inp[ix] != '\n' && inp[ix] != '\0' && inp[ix] != ';' && instructionCount < 10 && ix < 1000) {
-//            // extract a word
-//            for (wordlen = 0; !wordEnding(inp[ix]) && instructionCount < 10 && ix < 1000; ix++, wordlen++) {
-//                tmp[wordlen] = inp[ix];
-//            }
-//            tmp[wordlen] = '\0'; // break
-//            words[w] = strdup(tmp);
-//            w++;
-//            if (inp[ix] == '\0') end = true;
-//            ix++;
-//            if (inp[ix] == ';') instructionCount++;
-//
-//            errorCode = interpreter(words, w);
-//        }
-//        return errorCode;
-//    }
-//
-//}
-
 int parseInput(char inp[]) {
     char tmp[200], *words[100];
     int ix = 0, w = 0;

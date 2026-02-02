@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
+#include <ctype.h>
 #include "shellmemory.h"
 #include "shell.h"
 
@@ -29,6 +31,8 @@ int my_ls();
 int my_cd();
 int my_touch();
 int my_mkdir();
+int tokenEnding();
+int isAlphaNumeric(char word[]);
 
 // Interpret commands and their arguments
 int interpreter(char *command_args[], int args_size) {
@@ -103,7 +107,19 @@ int interpreter(char *command_args[], int args_size) {
             wait(NULL); // wait for child to finish
             return 0;
         }
-    } else
+    } else if (strcmp(command_args[0], "my_ls") == 0) {
+        if (args_size != 1) return badcommand();
+        return my_ls();
+    } else if (strcmp(command_args[0], "my_mkdir") == 0) {
+        if (args_size != 2) return badcommand();
+        return my_mkdir(command_args[1]);
+    } else if (strcmp(command_args[0], "my_touch") == 0) {
+      if (args_size != 2) return badcommand();
+      return my_touch(command_args[1]);
+    }else if (strcmp(command_args[0], "my_cd") == 0) {
+       if (args_size != 2) return badcommand();
+       return my_cd(command_args[1]);
+    }else
         return badcommand();
 }
 
@@ -184,14 +200,71 @@ int echo (char *text)
     return 0;
 }
 
-int my_touch(char *filename)
+int my_ls(){
+    DIR *currentDirectory= opendir(".");
+
+    char *allFiles[10];
+
+    return 0;
+}
+
+int my_mkdir(char filename[]){ // parse for alphanumeric
+
+    // Direct alphanumerical string
+    if (filename[0] != '$'){
+        if (isAlphaNumeric(filename)){
+            mkdir(filename, 0777);
+            return 0;}
+            else{
+                printf("%s\n", "Bad command: my_mkdir");
+                return 1;
+            }
+    }
+
+    // VAR
+    else {
+    filename++;
+    char *value = mem_get_value(filename);
+    if (value == NULL){ // is it found
+       printf("%s\n", "Bad command: my_mkdir");
+       return 1;
+    }
+    // is it a single token?
+    if (isAlphaNumeric(value)){
+    mkdir(value, 0777);
+    return 0;}
+    else{
+        printf("%s\n", "Bad command: my_mkdir");
+        return 1;
+    }
+}
+}
+
+int isAlphaNumeric(char word[]){
+    int x =0;
+        for (; !tokenEnding(word[x]); x++) {
+           if (!isalnum((unsigned char) word[x])) {
+                return 0;
+           }
+        }
+    return 1;
+}
+
+int tokenEnding(char c) {
+    return c == '\0' || c == '\n';
+}
+
+int my_touch(char *filename) // edge cases??
 {
     FILE *newFile ;
     newFile = fopen(filename, "w");
     fclose(newFile);
-
-//    if (newFile == NULL){
-//        return 1;
-//    }
     return 0; // return error code
+}
+
+int my_cd(char *dirname){
+    if (chdir(dirname)!=0){
+        printf("%s\n", "Bad command: my_cd");
+    }
+    return 0;
 }
