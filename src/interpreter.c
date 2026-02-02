@@ -3,6 +3,9 @@
 #include <string.h>
 #include <dirent.h>
 #include <ctype.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include "shellmemory.h"
 #include "shell.h"
 
@@ -28,19 +31,18 @@ int badcommandFileDoesNotExist();
 int echo(char *text);
 // Adding a break for mine - Remove later
 int my_ls();
-int my_cd();
-int my_touch();
-int my_mkdir();
-int tokenEnding();
+int my_mkdir(char filename[]);
+int my_cd(char *dirname);
+int my_touch(char *filename);
 int isAlphaNumeric(char word[]);
+int tokenEnding(char c);
+int prioritization(const void *c1, const void *c2);
 
 // Interpret commands and their arguments
 int interpreter(char *command_args[], int args_size) {
     int i;
-    printf("DEBUG 1\n");
 
     if (args_size < 1 || args_size > MAX_ARGS_SIZE) {
-        printf("args_size=%d\n", args_size);
         return badcommand();
     }
 
@@ -113,7 +115,6 @@ int interpreter(char *command_args[], int args_size) {
         if (args_size != 1) return badcommand();
         return my_ls();
     } else if (strcmp(command_args[0], "my_mkdir") == 0) {
-        printf("command='%s' args_size=%d\n", command_args[0], args_size);
         if (args_size != 2) return badcommand();
         return my_mkdir(command_args[1]);
     } else if (strcmp(command_args[0], "my_touch") == 0) {
@@ -123,7 +124,6 @@ int interpreter(char *command_args[], int args_size) {
        if (args_size != 2) return badcommand();
        return my_cd(command_args[1]);
     }else{
-        printf("DEBUG 2 - DID NOT MATCH\n");
         return badcommand();}
 }
 
@@ -205,11 +205,31 @@ int echo (char *text)
 }
 
 int my_ls(){
+    char *tmp[1000];
+    int w = 0;
+    int p = 0;
     DIR *currentDirectory= opendir(".");
+    struct dirent *output = readdir(currentDirectory);
+    while (output!= NULL){ // "It returns a null pointer upon reaching the end of the directory stream."
+        tmp[w++] = strdup(output->d_name);
+        output = readdir(currentDirectory);
+    }
+    closedir(currentDirectory); // to avoid handling errors
 
-    char *allFiles[10];
+    // step 2: sort tmp
 
+    qsort(tmp, w, sizeof(tmp[0]), prioritization);
+
+    while(w!=p){
+        printf("%s\n", tmp[p++]);
+    }
     return 0;
+}
+
+
+// int (*compar)(const void *, const void *)
+int prioritization(const void *c1, const void *c2){
+    return strcmp(*(const char **) c1,*(const char **)c2); // we cast c1
 }
 
 int my_mkdir(char filename[]){ // parse for alphanumeric
@@ -218,7 +238,6 @@ int my_mkdir(char filename[]){ // parse for alphanumeric
     if (filename[0] != '$'){
         if (isAlphaNumeric(filename)){
             mkdir(filename, 0777);
-            printf("%s\n", "DEBUG SUCCESFUL MKDIR");
             return 0;}
             else{
                 printf("%s\n", "Bad command: my_mkdir");
@@ -236,10 +255,8 @@ int my_mkdir(char filename[]){ // parse for alphanumeric
     }
     // is it a single token?
     if (isAlphaNumeric(value)){
-    mkdir(value, 0777);
-                printf("%s\n", "DEBUG SUCCESFUL MKDIR");
-
-    return 0;
+        mkdir(value, 0777);
+        return 0;
     }
     else{
         printf("%s\n", "Bad command: my_mkdir");
