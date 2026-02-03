@@ -14,8 +14,8 @@ clean:
 
 test: mysh
 	@for t in badcommand echo ls mkdir oneline oneline2 prompt run set source; do \
-		cd ../test-cases && ../../src/mysh < $$t.txt > result.tmp; \ \
-		diff -w -q ../test-cases/result.tmp ../test-cases/$$t_result.txt > /dev/null; \
+		cd ../test-cases && ../src/mysh < $$t.txt > result.tmp; \
+		diff -w -q ../test-cases/result.tmp ../test-cases/$${t}_result.txt > /dev/null; \
 		if [ $$? -eq 0 ]; then \
 			echo "$$t: PASS"; \
 		else \
