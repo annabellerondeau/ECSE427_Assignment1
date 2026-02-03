@@ -1,7 +1,0 @@
-echo hello
-echo we
-echo are
-echo running
-echo commands
-echo source
-echo finished.
