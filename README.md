@@ -7,5 +7,5 @@ To compile, run the following command:
 **make mysh**
 
 ## Running Tests
-To run all the tests and compare outputs. run the following command:  
+To run all the tests and compare outputs. run the following command from the test-cases folder:  
 **make test**
