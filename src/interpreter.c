@@ -11,6 +11,21 @@
 
 int MAX_ARGS_SIZE = 3;
 
+int help();
+int quit();
+int set(char *var, char *value);
+int print(char *var);
+int source(char *script);
+int badcommandFileDoesNotExist();
+int echo(char *text);
+int my_ls();
+int my_mkdir(char filename[]);
+int my_cd(char *dirname);
+int my_touch(char *filename);
+int isAlphaNumeric(char word[]);
+int tokenEnding(char c);
+int prioritization(const void *c1, const void *c2);
+
 int badcommand() {
     printf("Unknown Command\n");
     return 1;
@@ -21,22 +36,6 @@ int badcommandFileDoesNotExist() {
     printf("Bad command: File not found\n");
     return 3;
 }
-
-int help();
-int quit();
-int set(char *var, char *value);
-int print(char *var);
-int source(char *script);
-int badcommandFileDoesNotExist();
-int echo(char *text);
-// Adding a break for mine - Remove later
-int my_ls();
-int my_mkdir(char filename[]);
-int my_cd(char *dirname);
-int my_touch(char *filename);
-int isAlphaNumeric(char word[]);
-int tokenEnding(char c);
-int prioritization(const void *c1, const void *c2);
 
 // Interpret commands and their arguments
 int interpreter(char *command_args[], int args_size) {
@@ -111,20 +110,30 @@ int interpreter(char *command_args[], int args_size) {
             wait(NULL); // wait for child to finish
             return 0;
         }
+
     } else if (strcmp(command_args[0], "my_ls") == 0) {
-        if (args_size != 1) return badcommand();
+        if (args_size != 1)
+            return badcommand();
         return my_ls();
+
     } else if (strcmp(command_args[0], "my_mkdir") == 0) {
-        if (args_size != 2) return badcommand();
+        if (args_size != 2)
+            return badcommand();
         return my_mkdir(command_args[1]);
+
     } else if (strcmp(command_args[0], "my_touch") == 0) {
-      if (args_size != 2) return badcommand();
+      if (args_size != 2)
+            return badcommand();
       return my_touch(command_args[1]);
+
     }else if (strcmp(command_args[0], "my_cd") == 0) {
-       if (args_size != 2) return badcommand();
+       if (args_size != 2)
+            return badcommand();
        return my_cd(command_args[1]);
-    }else{
-        return badcommand();}
+
+    }else{ // if none of the known commands are input
+        return badcommand();
+    }
 }
 
 int help() {
@@ -205,20 +214,18 @@ int echo (char *text)
 }
 
 int my_ls(){
-    char *tmp[1000];
+    char *tmp[1000]; // an array of pointers to each file
     int w = 0;
     int p = 0;
-    DIR *currentDirectory= opendir(".");
-    struct dirent *output = readdir(currentDirectory);
+    DIR *currentDirectory= opendir("."); // open current directory
+    struct dirent *output = readdir(currentDirectory); // read one file from current directory
     while (output!= NULL){ // "It returns a null pointer upon reaching the end of the directory stream."
-        tmp[w++] = strdup(output->d_name);
+        tmp[w++] = strdup(output -> d_name);
         output = readdir(currentDirectory);
     }
     closedir(currentDirectory); // to avoid handling errors
 
-    // step 2: sort tmp
-
-    qsort(tmp, w, sizeof(tmp[0]), prioritization);
+    qsort(tmp, w, sizeof(tmp[0]), prioritization); // sort tmp
 
     while(w!=p){
         printf("%s\n", tmp[p++]);
@@ -226,70 +233,74 @@ int my_ls(){
     return 0;
 }
 
-
-// int (*compar)(const void *, const void *)
+// character comparison function for qsort of my_ls
 int prioritization(const void *c1, const void *c2){
-    return strcmp(*(const char **) c1,*(const char **)c2); // we cast c1
-}
+    return strcmp(*(const char **) c1,*(const char **)c2); // cast characters to strcmp input type
+}                                                          // and return strcmp comparison of both chars
 
-int my_mkdir(char filename[]){ // parse for alphanumeric
+// creates a new directory with the name dirname in the current directory
+int my_mkdir(char filename[]){
 
-    // Direct alphanumerical string
+    // filename is a string
     if (filename[0] != '$'){
         if (isAlphaNumeric(filename)){
-            mkdir(filename, 0777);
-            return 0;}
-            else{
-                printf("%s\n", "Bad command: my_mkdir");
-                return 1;
-            }
+            mkdir(filename, 0777); // file made with full permission 0777
+            return 0;
+        }else{
+            printf("%s\n", "Bad command: my_mkdir");
+            return 1;
+        }
     }
 
-    // VAR
+    // filename is a $VAR
     else {
-    filename++;
-    char *value = mem_get_value(filename);
-    if (value == NULL){ // is it found
-       printf("%s\n", "Bad command: my_mkdir");
-       return 1;
+        filename++; // ignore '$'
+        char *value = mem_get_value(filename);
+        if (value == NULL){ // there is no associated value
+           printf("%s\n", "Bad command: my_mkdir");
+           return 1;
+        }
+
+        if (isAlphaNumeric(value)){ // it is a single alphanumeric token
+            mkdir(value, 0777);
+            return 0;
+        }
+        else{
+            printf("%s\n", "Bad command: my_mkdir");
+            return 1;
+        }
     }
-    // is it a single token?
-    if (isAlphaNumeric(value)){
-        mkdir(value, 0777);
-        return 0;
-    }
-    else{
-        printf("%s\n", "Bad command: my_mkdir");
-        return 1;
-    }
-}
 }
 
 int isAlphaNumeric(char word[]){
-    int x =0;
-        for (; !tokenEnding(word[x]); x++) {
-           if (!isalnum((unsigned char) word[x])) {
-                return 0;
+    int x;
+        for (x=0; !tokenEnding(word[x]); x++) { // while we haven't reached the end of the word
+           if (!isalnum((unsigned char) word[x])) {  // isalnum returns whether a character is alphanumeric
+                return 0; // false
            }
         }
-    return 1;
+    return 1; // true
 }
 
 int tokenEnding(char c) {
-    return c == '\0' || c == '\n';
+    return c == '\0' || c == '\n'; // returns whether the token has reached a terminating character
 }
 
-int my_touch(char *filename) // edge cases??
+// creates a new empty file inside the current directory
+int my_touch(char *filename)
 {
     FILE *newFile ;
-    newFile = fopen(filename, "w");
+    newFile = fopen(filename, "w"); // open file in write mode: if the file does not exist it
+                                    // is created, if it does it is truncated to zero length
     fclose(newFile);
-    return 0; // return error code
+    return 0; // operation is successful
 }
 
+// changes current directory to directory dirname, inside the current directory
 int my_cd(char *dirname){
-    if (chdir(dirname)!=0){
+    if (chdir(dirname)!=0){ // function chdir returns 0 when the move to 'dirname' is successful
         printf("%s\n", "Bad command: my_cd");
+        return 1; // operation is unsuccessful
     }
-    return 0;
+    return 0; // operation is successful
 }

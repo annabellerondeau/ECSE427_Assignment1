@@ -49,9 +49,6 @@ int wordEnding(char c) {
 }
 
 // 1.2.4 One liners
-
-// There will be at most 10 chained instructions.
-// Semicolon is the only accepted separator
 int parseInput(char inp[]) {
     char tmp[200], *words[100];
     int ix = 0, w = 0;
@@ -62,20 +59,23 @@ int parseInput(char inp[]) {
     while (inp[ix] != '\0' && inp[ix] != '\n' && numberOfCommands < 10){ // Check if string of commands is done
         w=0;
         for (; inp[ix] == ' ' && ix < 1000; ix++); // skip white spaces
+
         while (inp[ix] != '\n' && inp[ix] != '\0' && inp[ix]!= ';' && ix < 1000) {
+
             // extract a word
             for (wordlen = 0; !wordEnding(inp[ix]) && inp[ix]!= ';' && ix < 1000; ix++, wordlen++) {
                 tmp[wordlen] = inp[ix];
             }
+
             tmp[wordlen] = '\0';
             words[w] = strdup(tmp);
             w++;
-            if (inp[ix] == '\0' || inp[ix] == ';' || inp[ix] == '\n') break;
+            if (inp[ix] == '\0' || inp[ix] == ';' || inp[ix] == '\n') break; // break from loop if command is completely parsed
             ix++;
         }
-        if (w != 0) errorCode = interpreter(words, w); // in case there is ls;  ; mkdir $var
-        numberOfCommands++;
-        if (inp[ix] == ';') ix++;
+        if (w != 0) errorCode = interpreter(words, w); // in case there is 'ls;  ; mkdir $var'
+        numberOfCommands++; // increment command count
+        if (inp[ix] == ';') ix++; // skip ';' character
     }
-    return errorCode; // how to detect error ?
+    return errorCode;
 }
