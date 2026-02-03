@@ -10,6 +10,7 @@ int parseInput(char ui[]);
 
 // Start of everything
 int main(int argc, char *argv[]) {
+    setvbuf(stdout, NULL, _IONBF, 0); // prevent buffering of printf output
     printf("Shell version 1.5 created Dec 2025\n");
 
     char prompt = '$';  				// Shell prompt
