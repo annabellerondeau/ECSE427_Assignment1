@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include "shellmemory.h"
 #include "shell.h"
+#include "pcb.h"
+#include "scheduler.h"
 
 int MAX_ARGS_SIZE = 3;
 
@@ -182,6 +184,9 @@ int source(char *script) {
         return badcommandFileDoesNotExist();
     }
 
+    int fileIndex;
+    int length; 
+
     int load = loadFileMemory(p, &fileIndex, &length); // load file into memory
     fclose(p);
 
@@ -189,7 +194,7 @@ int source(char *script) {
         return badcommandFileDoesNotExist();
     }
 
-    PCB* process = createPCB(startIndex, length); // create process for file in memory
+    PCB* process = createPCB(fileIndex, length); // create process for file in memory
     addToReadyQueue(process); // add process to ready queue
 
     errCode = scheduler(); // run processes in ready queue
