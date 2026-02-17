@@ -1,3 +1,6 @@
+#ifndef PCB_H
+#define PCB_H
+
 typedef struct PCB_struct 
 {
     int pid; // process id
@@ -8,3 +11,5 @@ typedef struct PCB_struct
 } PCB;
 
 PCB* createPCB(int startIndex, int length); // to implement
+
+#endif

@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "shellmemory.h"
+#include "shell.h"
 
 struct memory_struct {
     char *var;

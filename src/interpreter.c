@@ -194,7 +194,7 @@ int source(char *script) {
         return badcommandFileDoesNotExist();
     }
 
-    struct PCB* process = createPCB(fileIndex, length); // create process for file in memory
+    PCB* process = createPCB(fileIndex, length); // create process for file in memory
     addToReadyQueue(process); // add process to ready queue
 
     errCode = scheduler(); // run processes in ready queue
