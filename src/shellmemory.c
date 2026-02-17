@@ -10,6 +10,9 @@ struct memory_struct {
 
 struct memory_struct shellmemory[MEM_SIZE];
 
+char * code_memory[MEM_SIZE]; // holds lines of code from file for source command
+int memoryIndex = 0; // where we are in memeory when loading lines for source
+
 // Helper functions
 int match(char *model, char *var) {
     int i, len = strlen(var), matchCount = 0;
@@ -64,4 +67,34 @@ char *mem_get_value(char *var_in) {
         } 
     }
     return "Variable does not exist";
+}
+
+// load file into memory and return starting index and length of file in memory
+int loadFileMemory(FILE *p, int *fileIndex, int *length) 
+{
+    char line[MAX_USER_INPUT];
+    *fileIndex = memoryIndex; // start loading file at current memory index
+    int counter = 0;
+
+    while (fgets(line, MAX_USER_INPUT - 1, p) != NULL) 
+    {
+        if (memoryIndex >= 1000) 
+        {
+            return -1; // full memory error
+        }
+
+        line[strcspn(line, "\r\n")] = 0;
+        code_memory[memoryIndex] = strdup(line);
+
+        memoryIndex++; // increment next free slot in memory
+        counter++; // increment counter for length of file in memory
+    }
+
+    *length = counter; // length of file is number of lines read
+    return 0; // success
+}
+
+char* mem_get_code_line(int index) // getter for code memory
+{
+    return code_memory[index];
 }

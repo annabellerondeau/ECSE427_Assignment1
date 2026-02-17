@@ -175,26 +175,39 @@ int print(char *var) {
 
 int source(char *script) {
     int errCode = 0;
-    char line[MAX_USER_INPUT];
+    //char line[MAX_USER_INPUT];
     FILE *p = fopen(script, "rt");      // the program is in a file
 
     if (p == NULL) {
         return badcommandFileDoesNotExist();
     }
 
-    //fgets(line, MAX_USER_INPUT - 1, p);
-    while (fgets(line, MAX_USER_INPUT - 1, p) != NULL) {
-        errCode = parseInput(line);     // which calls interpreter()
-        memset(line, 0, sizeof(line));
-
-        if (feof(p)) {
-            break;
-        }
-    }
-
+    int load = loadFileMemory(p, &fileIndex, &length); // load file into memory
     fclose(p);
 
+    if (load != 0) {
+        return badcommandFileDoesNotExist();
+    }
+
+    PCB* process = createPCB(startIndex, length); // create process for file in memory
+    addToReadyQueue(process); // add process to ready queue
+
+    errCode = scheduler(); // run processes in ready queue
     return errCode;
+
+    // //fgets(line, MAX_USER_INPUT - 1, p);
+    // while (fgets(line, MAX_USER_INPUT - 1, p) != NULL) {
+    //     errCode = parseInput(line);     // which calls interpreter()
+    //     memset(line, 0, sizeof(line));
+
+    //     if (feof(p)) {
+    //         break;
+    //     }
+    // }
+
+    // fclose(p);
+
+    // return errCode;
 }
 
 int echo (char *text) 
