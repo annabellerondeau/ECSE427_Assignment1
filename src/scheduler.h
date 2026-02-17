@@ -1,4 +1,4 @@
 #include "pcb.h"
 
 int scheduler();
-void addToReadyQueue(PCB* process);
+void addToReadyQueue(struct PCB* process);
