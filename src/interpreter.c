@@ -27,6 +27,7 @@ int my_touch(char *filename);
 int isAlphaNumeric(char word[]);
 int tokenEnding(char c);
 int prioritization(const void *c1, const void *c2);
+int exec(char *scriptsAndPolicy, int numOfArgs);
 
 int badcommand() {
     printf("Unknown Command\n");
@@ -133,7 +134,13 @@ int interpreter(char *command_args[], int args_size) {
             return badcommand();
        return my_cd(command_args[1]);
 
-    }else{ // if none of the known commands are input
+    }else if (strcmp(command_args[0], "exec") == 0) {
+        if (args_size > 5 || args_size < 3)
+            return badcommand();
+        return exec(command_args+1, args_size-1);
+    }
+    else{ // if none of the known commands are input
+    }
         return badcommand();
     }
 }
@@ -321,4 +328,56 @@ int my_cd(char *dirname){
         return 1; // operation is unsuccessful
     }
     return 0; // operation is successful
+}
+
+int exec(char *scriptsAndPolicy[], int numOfArgs){
+    // Identify policy
+    char *policy = scriptsAndPolicy[numOfArgs-1];
+
+    if ((strcmp(policy, "FCFS") != 0) && (strcmp(policy, "SJF") != 0) // Validate Policy
+        && (strcmp(policy, "RR") != 0) && (strcmp(policy, "AGING") != 0)) {
+        printf("%s\n", "ERROR: Policy must be one of FCFS/SJF/RR/AGING");
+        return 1;
+    }
+
+    // Identify scripts
+    int numOfProgs = numOfArgs -1;
+    char *scripts[numOfProgs];
+    for (int i=0; i<numOfProgs; i++){
+         scripts[i] = scriptsAndPolicy[i];
+         for(int j=0; j<i; j++)
+            if (strcmp(scripts[i], scripts[j]) == 0){
+                printf("%s\n", "ERROR: No duplicate scripts allowed ):");
+                return 1;
+            }
+    }
+
+    // Loop 1: non-preemptive policies FCFS, SJF
+
+    // Loop2: preemptive policies RR AGING
+
+
+
+    FILE *p = fopen(script, "rt");      // the program is in a file
+
+    if (p == NULL) {
+        return badcommandFileDoesNotExist();
+    }
+
+    int fileIndex;
+    int length;
+
+    int load = loadFileMemory(p, &fileIndex, &length); // load file into memory
+    fclose(p);
+
+    if (load != 0) {
+        return badcommandFileDoesNotExist();
+    }
+
+    PCB* process = createPCB(fileIndex, length); // create process for file in memory
+    addToReadyQueue(process); // add process to ready queue
+
+    errCode = scheduler(); // run processes in ready queue
+    return errCode;
+    return 0;
 }
