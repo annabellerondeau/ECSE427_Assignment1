@@ -6,5 +6,6 @@
 
 int scheduler();
 void addToReadyQueue(PCB* process);
+void insertSJF(PCB* process);
 
 #endif

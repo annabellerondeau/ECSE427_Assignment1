@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "interpreter.h"
 #include "shellmemory.h"
 #include "shell.h"
 #include "pcb.h"
@@ -28,6 +29,8 @@ int isAlphaNumeric(char word[]);
 int tokenEnding(char c);
 int prioritization(const void *c1, const void *c2);
 //int exec(char *scriptsAndPolicy, int numOfArgs);
+
+char *policy = "FCFS"; // default policy is FCFS, can be changed by exec command
 
 int badcommand() {
     printf("Unknown Command\n");
@@ -137,6 +140,7 @@ int interpreter(char *command_args[], int args_size) {
     }else if (strcmp(command_args[0], "exec") == 0) {
         if (args_size > 5 || args_size < 3)
             return badcommand();
+        policy = command_args[args_size - 1]; // policy is last argument
         //return exec(command_args+1, args_size-1);
     }
     else{ // if none of the known commands are input
