@@ -1,3 +1,6 @@
+#include "pcb.h"
+#include <stdio.h>
+
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 

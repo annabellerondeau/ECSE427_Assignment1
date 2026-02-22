@@ -27,7 +27,7 @@ int my_touch(char *filename);
 int isAlphaNumeric(char word[]);
 int tokenEnding(char c);
 int prioritization(const void *c1, const void *c2);
-int exec(char *scriptsAndPolicy, int numOfArgs);
+//int exec(char *scriptsAndPolicy, int numOfArgs);
 
 int badcommand() {
     printf("Unknown Command\n");
@@ -137,10 +137,10 @@ int interpreter(char *command_args[], int args_size) {
     }else if (strcmp(command_args[0], "exec") == 0) {
         if (args_size > 5 || args_size < 3)
             return badcommand();
-        return exec(command_args+1, args_size-1);
+        //return exec(command_args+1, args_size-1);
     }
     else{ // if none of the known commands are input
-    }
+    //}
         return badcommand();
     }
 }
@@ -204,7 +204,7 @@ int source(char *script) {
     PCB* process = createPCB(fileIndex, length); // create process for file in memory
     addToReadyQueue(process); // add process to ready queue
 
-    errCode = scheduler(); // run processes in ready queue
+    errCode = scheduler(); // run processes in ready queue, returns error code if any 
     return errCode;
 
     // //fgets(line, MAX_USER_INPUT - 1, p);
@@ -331,92 +331,92 @@ int my_cd(char *dirname){
 }
 
 //3h
-int exec(char *scriptsAndPolicy[], int numOfArgs){
+// int exec(char *scriptsAndPolicy[], int numOfArgs){
 
-    // Identify flags
-    int backgroundFlag = 0; // 0 means off
-    int mtFlag = 0;
-    int endIndex = numOfArgs-1;
+//     // Identify flags
+//     int backgroundFlag = 0; // 0 means off
+//     int mtFlag = 0;
+//     int endIndex = numOfArgs-1;
 
-    if ((strcmp(scriptsAndPolicy[endIndex], "MT") == 0)){
-        mtFlag = 1;
-        endIndex--;
-    }
-    if ((strcmp(scriptsAndPolicy[endIndex], "#") == 0)){
-        backgroundFlag = 1;
-        endIndex--;
-    }
+//     if ((strcmp(scriptsAndPolicy[endIndex], "MT") == 0)){
+//         mtFlag = 1;
+//         endIndex--;
+//     }
+//     if ((strcmp(scriptsAndPolicy[endIndex], "#") == 0)){
+//         backgroundFlag = 1;
+//         endIndex--;
+//     }
 
-    // Identify policy
-    char *policy = scriptsAndPolicy[endIndex];
+//     // Identify policy
+//     char *policy = scriptsAndPolicy[endIndex];
 
-    if ((strcmp(policy, "FCFS") != 0) && (strcmp(policy, "SJF") != 0) // Validate Policy
-        && (strcmp(policy, "RR") != 0) && (strcmp(policy, "AGING") != 0)
-        && (strcmp(policy, "RR30") != 0)) {
-        printf("%s\n", "ERROR: Policy must be one of FCFS/SJF/RR/AGING");
-        return 1;
-    }
+//     if ((strcmp(policy, "FCFS") != 0) && (strcmp(policy, "SJF") != 0) // Validate Policy
+//         && (strcmp(policy, "RR") != 0) && (strcmp(policy, "AGING") != 0)
+//         && (strcmp(policy, "RR30") != 0)) {
+//         printf("%s\n", "ERROR: Policy must be one of FCFS/SJF/RR/AGING");
+//         return 1;
+//     }
 
-    // Identify scripts
-    int numOfProgs = endIndex;
-    char *scripts[numOfProgs];
-    for (int i=0; i<numOfProgs; i++){
-         scripts[i] = scriptsAndPolicy[i];
-         for(int j=0; j<i; j++)
-            if (strcmp(scripts[i], scripts[j]) == 0){
-                printf("%s\n", "ERROR: No duplicate scripts allowed ):");
-                return 1;
-            }
-    }
+//     // Identify scripts
+//     int numOfProgs = endIndex;
+//     char *scripts[numOfProgs];
+//     for (int i=0; i<numOfProgs; i++){
+//          scripts[i] = scriptsAndPolicy[i];
+//          for(int j=0; j<i; j++)
+//             if (strcmp(scripts[i], scripts[j]) == 0){
+//                 printf("%s\n", "ERROR: No duplicate scripts allowed ):");
+//                 return 1;
+//             }
+//     }
 
-    // initialize variables
-    PCB* processArray[numOfProgs]; // create process for file in memory
-    int processSizeArray[numOfProgs];
+//     // initialize variables
+//     PCB* processArray[numOfProgs]; // create process for file in memory
+//     int processSizeArray[numOfProgs];
 
-    // First load everything
-    for (int counter=0; numOfProgs > counter; counter++){
-        FILE *p = fopen(scripts[counter], "rt");      // the program is in a file
+//     // First load everything
+//     for (int counter=0; numOfProgs > counter; counter++){
+//         FILE *p = fopen(scripts[counter], "rt");      // the program is in a file
 
-        if (p == NULL) {
-            return badcommandFileDoesNotExist();
-        }
+//         if (p == NULL) {
+//             return badcommandFileDoesNotExist();
+//         }
 
-        int fileIndex;
-        int length;
+//         int fileIndex;
+//         int length;
 
-        int load = loadFileMemory(p, &fileIndex, &length); // load file into memory
-        fclose(p);
+//         int load = loadFileMemory(p, &fileIndex, &length); // load file into memory
+//         fclose(p);
 
-        if (load != 0) {
-            // FEATURE : CLEAR MEMORY
-            return badcommandFileDoesNotExist();
-        }
-        processArray[counter] = createPCB(fileIndex, length);
-        processSizeArray[counter] = length; // For SJF
-    }
+//         if (load != 0) {
+//             // FEATURE : CLEAR MEMORY
+//             return badcommandFileDoesNotExist();
+//         }
+//         processArray[counter] = createPCB(fileIndex, length);
+//         processSizeArray[counter] = length; // For SJF
+//     }
 
-    // Loop 1: non-preemptive policies First Come First Serve, Shortest Job First
-    // Loop2: preemptive policies RoundRobin AGING
-    // If SJF then sort
-//    if ((strcmp(policy, "SJF") == 0)){
-//        // Insertion sort (best for small arrays)
-//        for (int i=1; numOfProgs > i; i++){
-//            int j = i - 1;
-//            int temp = processSizeArray[i];
-//            PCB *tempPCB = processArray[i];
-//
-//            while (j>=0 && processSizeArray[j] > temp){
-//                processSizeArray[j+1] = processSizeArray[j];
-//                processArray[j+1] = processArray[j];
-//                j=j-1;
-//            }
-//            processSizeArray[j+1] = temp;
-//            processArray[j+1] = tempPCB;
-//        }
-//    }
-    // Second Schedule
-    for (int counter=0; numOfProgs > counter; counter++){
-        addToReadyQueue(processArray[counter]); // add process to ready queue
-    }
-    return scheduler();
-}
+//     // Loop 1: non-preemptive policies First Come First Serve, Shortest Job First
+//     // Loop2: preemptive policies RoundRobin AGING
+//     // If SJF then sort
+// //    if ((strcmp(policy, "SJF") == 0)){
+// //        // Insertion sort (best for small arrays)
+// //        for (int i=1; numOfProgs > i; i++){
+// //            int j = i - 1;
+// //            int temp = processSizeArray[i];
+// //            PCB *tempPCB = processArray[i];
+// //
+// //            while (j>=0 && processSizeArray[j] > temp){
+// //                processSizeArray[j+1] = processSizeArray[j];
+// //                processArray[j+1] = processArray[j];
+// //                j=j-1;
+// //            }
+// //            processSizeArray[j+1] = temp;
+// //            processArray[j+1] = tempPCB;
+// //        }
+// //    }
+//     // Second Schedule
+//     for (int counter=0; numOfProgs > counter; counter++){
+//         addToReadyQueue(processArray[counter]); // add process to ready queue
+//     }
+//     return scheduler();
+// }

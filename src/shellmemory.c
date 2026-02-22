@@ -99,3 +99,18 @@ char* mem_get_code_line(int index) // getter for code memory
 {
     return code_memory[index];
 }
+
+void clearMemory() // clear code memory
+{
+    int i;
+    for (i = 0; i < MEM_SIZE; i++)
+    {		
+        if (shellmemory[i].var != NULL) 
+        {
+            free(shellmemory[i].var);
+            free(shellmemory[i].value);
+            code_memory[i] = NULL;
+        }
+    }
+    memoryIndex = 0;
+}
