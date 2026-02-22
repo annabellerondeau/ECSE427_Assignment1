@@ -3,6 +3,7 @@
 #include "shell.h"
 #include "pcb.h"
 #include "interpreter.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +14,8 @@ PCB* tail = NULL;
 int scheduler()
 {
     int errCode = 0;
-    int maxInstructions = 2; // for RR
+    int maxInstructionsRR = 2; // for RR
+    int maxInstructionsAging = 1; // for AGING
 
     while (head != NULL) 
     {
@@ -29,7 +31,7 @@ int scheduler()
         {
             int instructionsCompleted = 0;
              
-            while (instructionsCompleted < maxInstructions && current->pc < current->length) // while there are still commands and max of 2 has not been reached
+            while (instructionsCompleted < maxInstructionsRR && current->pc < current->length) // while there are still commands and max of 2 has not been reached
             {
                 char *line = mem_get_code_line(current->startIndex + current->pc);
                 if (line != NULL) 
@@ -42,6 +44,37 @@ int scheduler()
 
             if (current->pc < current->length) // if there are still commands in the script that have not been ran
             { 
+                addToReadyQueue(current);
+            } 
+            else // free memory
+            {
+                free(current);
+            }
+        }
+
+        else if (strcmp(policy, "AGING") == 0)
+        {
+            int instructionsCompleted = 0;
+            while (instructionsCompleted < maxInstructionsAging && current->pc < current->length)
+            {
+                char *line = mem_get_code_line(current->startIndex + current->pc);
+                if (line != NULL) 
+                {
+                    errCode = parseInput(line);
+                }
+                current->pc++;
+                instructionsCompleted++;
+            }
+
+            if (current->pc < current->length) // if there are still commands in the script that have not been ran
+            { 
+                for (PCB* temp = head; temp != NULL; temp = temp->next) // update scores of processes in ready queue
+                {
+                    if (temp->score > 0) 
+                    {
+                        temp->score--;// decrement score of all processes in ready queue to implement aging
+                    }
+                }
                 addToReadyQueue(current);
             } 
             else // free memory
@@ -84,6 +117,11 @@ void addToReadyQueue(PCB* process)
         insertSJF(process);
     }
 
+    else if (strcmp(policy, "AGING") == 0)
+    {
+        insertAGING(process); // for simplicity, we will use SJF for AGING as well, since they both prioritize shorter jobs. In a real implementation, we would need to update the scores of the processes in the ready queue to implement aging.
+    }
+
     else if (head == NULL) 
     {
         head = process;
@@ -111,6 +149,34 @@ void insertSJF(PCB* process)
     {
         PCB* current = head;
         while (current->next != NULL && current->next->length <= process->length) // order from shortest to longest length
+        {
+            current = current->next;
+        }
+        process->next = current->next;
+        current->next = process;
+        if (process->next == NULL) 
+        {
+            tail = process;
+        }
+    }
+}
+
+void insertAGING(PCB* process)
+{
+    if (head == NULL || process->score < head->score) // if score is shorter than head score, process becomes new head
+    {
+        process->next = head;
+        head = process;
+        if (tail == NULL) 
+        {
+            tail = process;
+        }
+    } 
+    else 
+    {
+        PCB* current = head;
+        // if they are equal, the newer process is inserted after the older process
+        while (current->next != NULL && current->next->score <= process->score) // order from shortest to longest score
         {
             current = current->next;
         }

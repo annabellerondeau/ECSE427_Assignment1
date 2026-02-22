@@ -9,6 +9,7 @@ PCB* createPCB(int startIndex, int length)
     newPCB->pid = processIDCounter++; // assign unique pid
     newPCB->startIndex = startIndex;
     newPCB->length = length;
+    newPCB->score = length; // for aging, initialize score to length
     newPCB->pc = 0; // initialize program counter to 0
     newPCB->next = NULL; // initialize next pointer to NULL
     return newPCB;

@@ -9,6 +9,7 @@ typedef struct PCB_struct
     int startIndex;
     int length;
     int pc;  // program counter
+    int score; // aging -> starts with length 
     struct PCB_struct *next; // pointer to next PCB in the queue
 } PCB;
 
