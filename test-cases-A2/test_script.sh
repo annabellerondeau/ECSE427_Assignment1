@@ -10,7 +10,7 @@ fi
 TYPE=$(echo "$1" | tr '[:lower:]' '[:upper:]')
 
 TEST_DIR="test-cases-A2"
-SHELL_PATH="./src/mysh"
+SHELL_PATH="../src/mysh"
 
 if [ ! -f "$SHELL_PATH" ]; then
     echo "Error: mysh not found. Run make first."
