@@ -22,7 +22,7 @@ int maxInstructionsRR = 2; // for RR
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t queue_not_empty = PTHREAD_COND_INITIALIZER;
 
-void manageThread(void *args);
+void* manageThread(void *args);
 
 int scheduler()
 {
@@ -236,7 +236,7 @@ bool isReadyQueueEmpty()
     return head == NULL;
 }
 
-void manageThread(void *args){
+void* manageThread(void *args){
     int errCode = 0;
     while (1){ // as RR keeps adding to queue and we have 2 threads we cannot terminate thread on HEAD!= NULL
         pthread_mutex_lock(&lock); //lock queeue before checking

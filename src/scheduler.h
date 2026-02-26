@@ -14,5 +14,7 @@ void insertAGING(PCB* process);
 // global variables
 extern char *policy;
 extern int mtFlag;
+extern pthread_t t1;
+extern pthread_t t2;
 
 #endif
