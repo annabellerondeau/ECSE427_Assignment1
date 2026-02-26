@@ -12,7 +12,7 @@
 #include "pcb.h"
 #include "scheduler.h"
 
-int MAX_ARGS_SIZE = 3;
+int MAX_ARGS_SIZE = 7;
 
 int help();
 int quit();
