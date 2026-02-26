@@ -25,7 +25,7 @@ testA1: mysh
 	@rm -f result.tmp
 
 testA2: mysh
-	@for t in T_AGING T_AGING2 T_AGING3 T_AGING4 T_background T_FCFS T_FCFS2 T_FCFS3 T_FCFS4 T_RR T_RR2 T_RR3 T_RR4 T_RR30 T_RR30_2 T_SJF T_SJF2 T_SJF3 T_SJF4 T_source; do \
+	@for t in $$(cd ../test-cases-A2 && ls T_*.txt | grep -v '_result' | sed 's/.txt//'); do \
 		cd ../test-cases-A2 && ../src/mysh < $$t.txt > result.tmp; \
 		diff -w -q ../test-cases-A2/result.tmp ../test-cases-A2/$${t}_result.txt > /dev/null; \
 		if [ $$? -eq 0 ]; then \
