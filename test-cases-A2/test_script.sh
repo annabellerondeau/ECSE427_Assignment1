@@ -20,7 +20,7 @@ fi
 echo "Running $TYPE tests..."
 echo "-----------------------------"
 
-for f in $TEST_DIR/T_${TYPE}*.txt; do
+for f in T_${TYPE}*.txt; do
     # Skip result files
     if [[ "$f" == *_result.txt ]]; then
         continue
