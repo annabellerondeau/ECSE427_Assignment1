@@ -9,4 +9,6 @@ void addToReadyQueue(PCB* process);
 void insertSJF(PCB* process);
 void insertAGING(PCB* process);
 
+extern char *policy; // global variable
+
 #endif

@@ -10,6 +10,7 @@
 
 PCB* head = NULL;
 PCB* tail = NULL;
+char *policy = "FCFS"; // default policy is FCFS, can be changed by exec command
 
 int scheduler()
 {
