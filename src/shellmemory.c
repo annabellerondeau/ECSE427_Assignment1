@@ -100,15 +100,21 @@ char* mem_get_code_line(int index) // getter for code memory
     return code_memory[index];
 }
 
+// if "none" no need to clear
 void clearMemory() // clear code memory
 {
     int i;
     for (i = 0; i < MEM_SIZE; i++)
     {		
-        if (shellmemory[i].var != NULL) 
+        if (shellmemory[i].var != NULL && strcmp(shellmemory[i].var, "none") != 0)
         {
             free(shellmemory[i].var);
+            shellmemory[i].var= "none";
             free(shellmemory[i].value);
+            shellmemory[i].value= "none";
+        }
+        if(code_memory[i] != NULL){
+            free(code_memory[i]);
             code_memory[i] = NULL;
         }
     }

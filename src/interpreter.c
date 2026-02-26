@@ -12,7 +12,7 @@
 #include "pcb.h"
 #include "scheduler.h"
 
-int MAX_ARGS_SIZE = 7;
+int MAX_ARGS_SIZE = 10; // arbitrary (to be removed)
 
 int help();
 int quit();
@@ -189,6 +189,7 @@ int source(char *script) {
     FILE *p = fopen(script, "rt");      // the program is in a file
 
     if (p == NULL) {
+        printf("DEBUG p == NULL \n");
         return badcommandFileDoesNotExist();
     }
 
@@ -198,7 +199,8 @@ int source(char *script) {
     int load = loadFileMemory(p, &fileIndex, &length); // load file into memory
     fclose(p);
 
-    if (load != 0) {
+    if (load != 0) { // fix: error message ?
+        printf("DEBUG load failed \n");
         return badcommandFileDoesNotExist();
     }
 
