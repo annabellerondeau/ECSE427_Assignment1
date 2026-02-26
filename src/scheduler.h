@@ -11,6 +11,8 @@ bool isReadyQueueEmpty();
 void insertSJF(PCB* process);
 void insertAGING(PCB* process);
 
-extern char *policy; // global variable
+// global variables
+extern char *policy;
+extern int mtFlag;
 
 #endif

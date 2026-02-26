@@ -6,11 +6,13 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <pthread.h>
 #include "interpreter.h"
 #include "shellmemory.h"
 #include "shell.h"
 #include "pcb.h"
 #include "scheduler.h"
+
 
 int MAX_ARGS_SIZE = 10; // arbitrary (to be removed)
 
@@ -160,6 +162,10 @@ source SCRIPT.TXT	Executes the file SCRIPT.TXT\n ";
 }
 
 int quit() {
+    if (mtFlag){ // if process was multithreaded
+        pthread_join(t1,NULL);
+        pthread_join(t2,NULL);
+    }
     printf("Bye!\n");
     exit(0);
 }
@@ -338,11 +344,10 @@ int my_cd(char *dirname){
 
      // Identify flags
      int backgroundFlag = 0; // 0 means off
-     int mtFlag = 0;
      int endIndex = numOfArgs-1;
 
      if ((strcmp(scriptsAndPolicy[endIndex], "MT") == 0)){
-         mtFlag = 1;
+         mtFlag = 1; // remains enabled for duration of test case
          endIndex--;
      }
      if ((strcmp(scriptsAndPolicy[endIndex], "#") == 0)){

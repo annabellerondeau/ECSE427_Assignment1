@@ -11,123 +11,143 @@
 PCB* head = NULL;
 PCB* tail = NULL;
 char *policy = "FCFS"; // default policy is FCFS, can be changed by exec command
+mtFlag = 0; // global variable defined in header
+pthread_t t1;
+pthread_t t2;
+int threadsInitialized = 0;
+int maxInstructionsRR = 2; // for RR
+
+//global MT controls
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t queue_not_empty = PTHREAD_COND_INITIALIZER;
 
 int scheduler()
 {
     int errCode = 0;
-    int maxInstructionsRR = 2; // for RR
     if (strcmp(policy, "RR30") == 0) maxInstructionsRR = 30;
     int maxInstructionsAging = 1; // for AGING
-
-    while (head != NULL) 
-    {
-        PCB* current = head; /// pop head of queue
-        head = head->next;
-        if (head == NULL)
+    if (!mtFlag){
+        while (head != NULL)
         {
-            tail = NULL;
-        }
-        //printf("Running process with PID: %d\n", current->pid); // DEBUG
-
-        if (strcmp(policy, "RR") == 0 || strcmp(policy, "RR30") == 0)
-        {
-            int instructionsCompleted = 0;
-             
-            while (instructionsCompleted < maxInstructionsRR && current->pc < current->length) // while there are still commands and max of 2 has not been reached
+            PCB* current = head; /// pop head of queue
+            head = head->next;
+            if (head == NULL)
             {
-                char *line = mem_get_code_line(current->startIndex + current->pc);
-                if (line != NULL) 
+                tail = NULL;
+            }
+            //printf("Running process with PID: %d\n", current->pid); // DEBUG
+
+            if (strcmp(policy, "RR") == 0 || strcmp(policy, "RR30") == 0)
+            {
+                int instructionsCompleted = 0;
+
+                while (instructionsCompleted < maxInstructionsRR && current->pc < current->length) // while there are still commands and max of 2 has not been reached
                 {
-                    errCode = parseInput(line);
+                    char *line = mem_get_code_line(current->startIndex + current->pc);
+                    if (line != NULL)
+                    {
+                        errCode = parseInput(line);
+                    }
+                    current->pc++;
+                    instructionsCompleted++;
                 }
-                current->pc++;
-                instructionsCompleted++;
-            }
 
-            if (current->pc < current->length) // if there are still commands in the script that have not been ran
-            { 
-                addToReadyQueue(current);
-            } 
-            else // free memory
-            {
-                free(current);
-            }
-        }
-
-        else if (strcmp(policy, "AGING") == 0)
-        {
-            int instructionsCompleted = 0;
-            while (instructionsCompleted < maxInstructionsAging && current->pc < current->length)
-            {
-                char *line = mem_get_code_line(current->startIndex + current->pc);
-                if (line != NULL) 
-                {
-                    errCode = parseInput(line);
-                }
-                current->pc++;
-                instructionsCompleted++;
-            }
-
-            PCB* temp = head;
-            while (temp!= NULL)
-            {
-                if (temp->score > 0) 
-                {
-                    temp->score--;// decrement score of all processes in ready queue
-                }
-                temp = temp->next;
-            }
-
-            if (current->pc < current->length) // if there are still commands in the script that have not been ran
-            { 
-                if (head != NULL && head->score < current->score)
+                if (current->pc < current->length) // if there are still commands in the script that have not been ran
                 {
                     addToReadyQueue(current);
                 }
-                else // if current process has highest score, it goes to the head of the queue
+                else // free memory
                 {
-                    current->next = head;
-                    head = current;
-                    if (tail == NULL) 
+                    free(current);
+                }
+            }
+
+            else if (strcmp(policy, "AGING") == 0)
+            {
+                int instructionsCompleted = 0;
+                while (instructionsCompleted < maxInstructionsAging && current->pc < current->length)
+                {
+                    char *line = mem_get_code_line(current->startIndex + current->pc);
+                    if (line != NULL)
                     {
-                        tail = current;
+                        errCode = parseInput(line);
+                    }
+                    current->pc++;
+                    instructionsCompleted++;
+                }
+
+                PCB* temp = head;
+                while (temp!= NULL)
+                {
+                    if (temp->score > 0)
+                    {
+                        temp->score--;// decrement score of all processes in ready queue
+                    }
+                    temp = temp->next;
+                }
+
+                if (current->pc < current->length) // if there are still commands in the script that have not been ran
+                {
+                    if (head != NULL && head->score < current->score)
+                    {
+                        addToReadyQueue(current);
+                    }
+                    else // if current process has highest score, it goes to the head of the queue
+                    {
+                        current->next = head;
+                        head = current;
+                        if (tail == NULL)
+                        {
+                            tail = current;
+                        }
                     }
                 }
-            } 
-            else // free memory
+                else // free memory
+                {
+                    free(current);
+                }
+            }
+
+            else // FCFS or SJF
             {
+                while (current->pc < current->length) // while there are still commands to execute in the script
+                {
+                    int mem_index = current->startIndex + current->pc; // compute index in code memory
+                    char* command = mem_get_code_line(mem_index); // get command from mem
+                    if (command != NULL)
+                    {
+                        errCode = parseInput(command);
+                    }
+                    else
+                    {
+                        printf("Error: Command not found at memory index %d\n", mem_index);
+                        break;
+                    }
+                    current->pc++;
+                }
+
                 free(current);
             }
         }
-
-        else // FCFS or SJF
-        {
-            while (current->pc < current->length) // while there are still commands to execute in the script
-            {
-                int mem_index = current->startIndex + current->pc; // compute index in code memory
-                char* command = mem_get_code_line(mem_index); // get command from mem
-                if (command != NULL) 
-                {
-                    errCode = parseInput(command);
-                } 
-                else
-                {
-                    printf("Error: Command not found at memory index %d\n", mem_index);
-                    break;
-                } 
-                current->pc++;
-            }
-
-            free(current);
-        }       
+    clearMemory(); // only when ready queue is empty
     }
-    clearMemory(); // only when ready queue is empty 
+    else{
+        // Create threads
+        if (!threadsInitialized){
+            threadsInitialized++;
+            pthread_create(&t1, NULL, manageThread, NULL); // thread ID variable, attributes , the function to run, and its argument
+            pthread_create(&t2, NULL, manageThread, NULL);
+        }
+
+        // Process is RR or RR30
+    }
     return errCode;
 }
 
 void addToReadyQueue(PCB* process)
 {
-    process->next = NULL; 
+    pthread_mutex_lock(&lock);
+    process->next = NULL;
 
     if (strcmp(policy, "SJF") == 0)
     {
@@ -149,6 +169,8 @@ void addToReadyQueue(PCB* process)
         tail->next = process;
         tail = process;
     }
+    pthread_cond_signal(&queue_not_empty);
+    pthread_mutex_unlock(&lock);
 }
 
 void insertSJF(PCB* process)
@@ -209,4 +231,50 @@ void insertAGING(PCB* process)
 bool isReadyQueueEmpty()
 {
     return head == NULL;
+}
+
+void manageThread(void *args){
+    int errCode = 0;
+    while (1){ // as RR keeps adding to queue and we have 2 threads we cannot terminate thread on HEAD!= NULL
+        pthread_mutex_lock(&lock); //lock queeue before checking
+        // FOUND ONLINE
+        while (head == NULL) {
+            pthread_cond_wait(&queue_not_empty, &lock);
+        } // FOUND ONLINE
+
+        PCB* current = head; /// pop head of queue
+
+        //iterate through queue
+
+        head = head->next;
+        if (head == NULL)
+        {
+            tail = NULL;
+        }
+        pthread_mutex_unlock(&lock);
+
+        // check policy (ONLY RR or RR30)
+        int instructionsCompleted = 0;
+
+        while (instructionsCompleted < maxInstructionsRR && current->pc < current->length) // while there are still commands and max of 2 has not been reached
+        {
+            char *line = mem_get_code_line(current->startIndex + current->pc);
+            if (line != NULL)
+            {
+                errCode = parseInput(line);
+            }
+            current->pc++;
+            instructionsCompleted++;
+        }
+
+        if (current->pc < current->length) // if there are still commands in the script that have not been ran
+        {
+            addToReadyQueue(current);
+        }
+        else // free memory
+        {
+            free(current);
+        }
+    }
+    return NULL;
 }
