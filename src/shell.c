@@ -5,6 +5,7 @@
 #include "shell.h"
 #include "interpreter.h"
 #include "shellmemory.h"
+#include "scheduler.h"
 
 int parseInput(char ui[]);
 
@@ -33,8 +34,23 @@ int main(int argc, char *argv[]) {
         // so that you can find a way to not display $ in the batch mode
         if (fgets(userInput, MAX_USER_INPUT-1, stdin) == NULL) // break on EOF
         {
+            if (!isReadyQueueEmpty()) // if there are still processes in the ready queue, run the scheduler before exiting
+            {
+                scheduler();
+            }
             break;
         }
+
+        // edge case: if user hits a blank line, contiue to next iteration
+        if (strcmp(userInput, "\n") == 0 || userInput[0] == '\0') 
+        { 
+            if (!isReadyQueueEmpty()) 
+            {
+                scheduler();
+            }
+            continue; // Skip the rest of the loop
+        }
+
         errorCode = parseInput(userInput);
         if (errorCode == -1) exit(99);	// ignore all other errors
         memset(userInput, 0, sizeof(userInput));

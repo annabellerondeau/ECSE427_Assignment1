@@ -405,5 +405,10 @@ int my_cd(char *dirname){
          addToReadyQueue(processArray[counter]); // add process to ready queue
      }
 
-     return scheduler(); // Scheduler clears memory
+     if (backgroundFlag == 0)
+     {
+        return scheduler(); // Scheduler clears memory
+     }
+
+     return 0; // if background flag is on we don't run the scheduler so we return 0 for success
  }

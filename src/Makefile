@@ -30,7 +30,10 @@ testA2: mysh
 		diff -w -q ../test-cases-A2/result.tmp ../test-cases-A2/$${t}_result.txt > /dev/null; \
 		if [ $$? -eq 0 ]; then \
 			echo "$$t: PASS"; \
+		elif [ -f $${t}_result2.txt ] && diff -w -B -q result.tmp $${t}_result2.txt > /dev/null; then \
+			echo "$$t: PASS (Matches Result 2)"; \
 		else \
 			echo "$$t: FAIL"; \
+			diff -y result.tmp $${t}_result.txt; \
 		fi; \
 	done

@@ -16,6 +16,7 @@ int scheduler()
 {
     int errCode = 0;
     int maxInstructionsRR = 2; // for RR
+    if (strcmp(policy, "RR30") == 0) maxInstructionsRR = 30;
     int maxInstructionsAging = 1; // for AGING
 
     while (head != NULL) 
@@ -28,7 +29,7 @@ int scheduler()
         }
         //printf("Running process with PID: %d\n", current->pid); // DEBUG
 
-        if (strcmp(policy, "RR") == 0)
+        if (strcmp(policy, "RR") == 0 || strcmp(policy, "RR30") == 0)
         {
             int instructionsCompleted = 0;
              
@@ -67,16 +68,31 @@ int scheduler()
                 instructionsCompleted++;
             }
 
+            PCB* temp = head;
+            while (temp!= NULL)
+            {
+                if (temp->score > 0) 
+                {
+                    temp->score--;// decrement score of all processes in ready queue
+                }
+                temp = temp->next;
+            }
+
             if (current->pc < current->length) // if there are still commands in the script that have not been ran
             { 
-                for (PCB* temp = head; temp != NULL; temp = temp->next) // update scores of processes in ready queue
+                if (head != NULL && head->score < current->score)
                 {
-                    if (temp->score > 0) 
+                    addToReadyQueue(current);
+                }
+                else // if current process has highest score, it goes to the head of the queue
+                {
+                    current->next = head;
+                    head = current;
+                    if (tail == NULL) 
                     {
-                        temp->score--;// decrement score of all processes in ready queue to implement aging
+                        tail = current;
                     }
                 }
-                addToReadyQueue(current);
             } 
             else // free memory
             {
@@ -188,4 +204,9 @@ void insertAGING(PCB* process)
             tail = process;
         }
     }
+}
+
+bool isReadyQueueEmpty()
+{
+    return head == NULL;
 }
