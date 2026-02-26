@@ -22,7 +22,7 @@ int maxInstructionsRR = 2; // for RR
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t queue_not_empty = PTHREAD_COND_INITIALIZER;
 
-void* manageThread(void *args);
+void manageThread(void *args);
 
 int scheduler()
 {
