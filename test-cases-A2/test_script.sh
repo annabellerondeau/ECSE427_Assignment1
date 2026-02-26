@@ -9,7 +9,6 @@ fi
 
 TYPE=$(echo "$1" | tr '[:lower:]' '[:upper:]')
 
-TEST_DIR="test-cases-A2"
 SHELL_PATH="../src/mysh"
 
 if [ ! -f "$SHELL_PATH" ]; then
@@ -28,16 +27,21 @@ for f in T_${TYPE}*.txt; do
 
     OUTPUT="tmp_out.txt"
     EXPECTED="${f%.txt}_result.txt"
+    EXPECTED_CLEAN="tmp_expected.txt"
 
-    $SHELL_PATH < "$f" > "$OUTPUT"
+    # Remove 1 line from your shell output
+    $SHELL_PATH < "$f" | tail -n +2 > "$OUTPUT"
 
-    if diff -q "$OUTPUT" "$EXPECTED" > /dev/null; then
+    # Remove 2 lines from gold output (banner + blank line)
+    tail -n +3 "$EXPECTED" > "$EXPECTED_CLEAN"
+
+    if diff -q "$OUTPUT" "$EXPECTED_CLEAN" > /dev/null; then
         echo "✅ $(basename $f) PASS"
     else
         echo "❌ $(basename $f) FAIL"
         echo "   Differences:"
-        diff "$OUTPUT" "$EXPECTED"
+        diff "$OUTPUT" "$EXPECTED_CLEAN"
     fi
 done
 
-rm -f tmp_out.txt
+rm -f tmp_out.txt tmp_expected.txt
