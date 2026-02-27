@@ -167,6 +167,7 @@ source SCRIPT.TXT	Executes the file SCRIPT.TXT\n ";
 
 int quit() {
     if (mtFlag && threadsInitialized){ // if process was multithreaded
+
         pthread_mutex_lock(&lock);
         active_jobs = 0;
         pthread_cond_broadcast(&queue_not_empty);
@@ -176,7 +177,7 @@ int quit() {
         pthread_join(t2,NULL);
 
         threadsInitialized =0;
-        clearMemory();
+        //clearMemory();
     }
     printf("Bye!\n");
     exit(0);
