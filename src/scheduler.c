@@ -141,11 +141,11 @@ int scheduler()
             pthread_create(&t1, NULL, manageThread, NULL); // thread ID variable, attributes , the function to run, and its argument
             pthread_create(&t2, NULL, manageThread, NULL);
         }
-        if (backgroundFlag == 0) {
-            pthread_join(t1, NULL);
-            pthread_join(t2, NULL);
-            clearMemory();
-        }
+//        if (backgroundFlag == 0) {
+//            pthread_join(t1, NULL);
+//            pthread_join(t2, NULL);
+//            clearMemory();
+//        }
 
         // Process is RR or RR30
     }
@@ -244,12 +244,18 @@ bool isReadyQueueEmpty()
 
 void* manageThread(void *args){
     int errCode = 0;
-    while (active_jobs!=0 && head != NULL){ // as RR keeps adding to queue and we have 2 threads we cannot terminate thread on HEAD!= NULL
+    while (1){ // as RR keeps adding to queue and we have 2 threads we cannot terminate thread on HEAD!= NULL
         pthread_mutex_lock(&lock); //lock queeue before checking
+
         // FOUND ONLINE
-        while (head == NULL) {
+        while (head == NULL && active_jobs > 0) {
             pthread_cond_wait(&queue_not_empty, &lock);
         } // FOUND ONLINE
+
+        if (active_jobs == 0) {
+            pthread_mutex_unlock(&lock);
+            break;
+        }
 
         PCB* current = head; /// pop head of queue
 
@@ -282,9 +288,10 @@ void* manageThread(void *args){
         }
         else // free memory
         {
+            pthread_mutex_lock(&lock);
             active_jobs--;
+            pthread_mutex_unlock(&lock);
             free(current);
         }
     }
-    pthread_mutex_unlock(&lock);
 }
