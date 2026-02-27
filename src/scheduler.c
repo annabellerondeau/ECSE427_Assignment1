@@ -28,7 +28,7 @@ void* manageThread(void *args);
 
 int scheduler()
 {
-    printf("[DEBUG] Entered Scheduler. MT Mode: %d, active_jobs: %d\n", mtFlag, active_jobs);
+    // printf("[DEBUG] Entered Scheduler. MT Mode: %d, active_jobs: %d\n", mtFlag, active_jobs);
     int errCode = 0;
     if (strcmp(policy, "RR30") == 0) maxInstructionsRR = 30;
     int maxInstructionsAging = 1; // for AGING
@@ -135,37 +135,37 @@ int scheduler()
                 free(current);
             }
         }
-    clearMemory(); // only when ready queue is empty
+        clearMemory(); // only when ready queue is empty
     }
     else{
         // Create threads
-        printf("[DEBUG] Initializing threads for the first time...\n");
+        // printf("[DEBUG] Initializing threads for the first time...\n");
         //pthread_mutex_lock(&lock);
         if (!threadsInitialized){
             threadsInitialized++;
             pthread_create(&t1, NULL, manageThread, NULL); // thread ID variable, attributes , the function to run, and its argument
             pthread_create(&t2, NULL, manageThread, NULL);
         }
-        printf("[DEBUG] Number of threads running: %d\n", threadsInitialized);
+        // printf("[DEBUG] Number of threads running: %d\n", threadsInitialized);
         
         pthread_cond_broadcast(&queue_not_empty); 
 
 //WAS COMMENTED
         if (backgroundFlag == 0) { 
             pthread_mutex_lock(&lock);
-            while (active_jobs > 0 && pthread_equal(pthread_self(), mainThreadID)) { // only wait if we are in the main thread and there are active jobs
-                printf("[DEBUG] Thread %lu waiting for active_jobs to reach 0 (Current: %d)\n", (unsigned long)pthread_self(), active_jobs);
+            while (active_jobs > 1) { //} && pthread_equal(pthread_self(), mainThreadID)) { // only wait if we are in the main thread and there are active jobs
+                // printf("[DEBUG] Thread %lu waiting for active_jobs to reach 0 (Current: %d)\n", (unsigned long)pthread_self(), active_jobs);
                 // Wait for worker threads to signal that active_jobs reached 0
                 pthread_cond_wait(&queue_not_empty, &lock);
             }
             pthread_mutex_unlock(&lock);
 
             // In foreground mode, we can clear memory once jobs are done
-            clearMemory();
+            //clearMemory();
         }
 
 // WAS COMMENTED
-        printf("[DEBUG] Broadcasting to threads and returning to interpreter...\n");
+        // printf("[DEBUG] Broadcasting to threads and returning to interpreter...\n");
         pthread_cond_broadcast(&queue_not_empty);
         //pthread_mutex_unlock(&lock);
 
@@ -266,7 +266,7 @@ bool isReadyQueueEmpty()
 }
 
 void* manageThread(void *args){
-    printf("[DEBUG] Thread spawned and alive!\n");
+    // printf("[DEBUG] Thread spawned and alive!\n");
     int errCode = 0;
     while (1){ // as RR keeps adding to queue and we have 2 threads we cannot terminate thread on HEAD!= NULL
         pthread_mutex_lock(&lock); //lock queeue before checking
@@ -313,10 +313,11 @@ void* manageThread(void *args){
         {
             pthread_mutex_lock(&lock);
             active_jobs--;
+            // // printf("[DEBUG] Decremented active_jobs. Current: %d\n", active_jobs);
             pthread_cond_broadcast(&queue_not_empty);
             pthread_mutex_unlock(&lock);
             free(current);
         }
     }
-    printf("[DEBUG] THREAD %lu: Job finished. Remaining active_jobs: %d\n", (unsigned long)pthread_self(), active_jobs);
+    // printf("[DEBUG] THREAD %lu: Job finished. Remaining active_jobs: %d\n", (unsigned long)pthread_self(), active_jobs);
 }
