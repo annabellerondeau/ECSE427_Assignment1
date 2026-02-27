@@ -17,6 +17,7 @@ pthread_t t1;
 pthread_t t2;
 int threadsInitialized = 0;
 int maxInstructionsRR = 2; // for RR
+int active_jobs = 0;
 
 //global MT controls
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
@@ -141,6 +142,11 @@ int scheduler()
             pthread_create(&t1, NULL, manageThread, NULL); // thread ID variable, attributes , the function to run, and its argument
             pthread_create(&t2, NULL, manageThread, NULL);
         }
+        if (backgroundFlag == 0) {
+            pthread_join(t1, NULL);
+            pthread_join(t2, NULL);
+            clearMemory();
+        }
 
         // Process is RR or RR30
     }
@@ -150,6 +156,7 @@ int scheduler()
 void addToReadyQueue(PCB* process)
 {
     pthread_mutex_lock(&lock);
+    active_jobs++;
     process->next = NULL;
 
     if (strcmp(policy, "SJF") == 0)
@@ -238,7 +245,7 @@ bool isReadyQueueEmpty()
 
 void* manageThread(void *args){
     int errCode = 0;
-    while (1){ // as RR keeps adding to queue and we have 2 threads we cannot terminate thread on HEAD!= NULL
+    while (active_jobs!=0 && head != NULL){ // as RR keeps adding to queue and we have 2 threads we cannot terminate thread on HEAD!= NULL
         pthread_mutex_lock(&lock); //lock queeue before checking
         // FOUND ONLINE
         while (head == NULL) {
@@ -276,7 +283,9 @@ void* manageThread(void *args){
         }
         else // free memory
         {
+            active_jobs--;
             free(current);
         }
     }
+    pthread_mutex_unlock(&lock);
 }
