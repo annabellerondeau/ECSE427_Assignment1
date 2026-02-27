@@ -167,13 +167,17 @@ source SCRIPT.TXT	Executes the file SCRIPT.TXT\n ";
 
 int quit() {
     printf("[DEBUG] Quit called. MT: %d, Active Jobs: %d\n", mtFlag, active_jobs);
+    pthread_mutex_lock(&lock);
     pthread_cond_broadcast(&queue_not_empty); // safety poke
+    pthread_mutex_unlock(&lock);
     if (mtFlag && threadsInitialized){ // if process was multithreaded
         pthread_mutex_lock(&lock);
         printf("[DEBUG] Lock acquired before waiting for jobs to finish...\n");
+        printf("[DEBUG] Active jobs at quit: %d\n", active_jobs);
+        printf("[DEBUG] %s", active_jobs > 1 ? "Waiting for active jobs to finish...\n" : "No active jobs. Proceeding with shutdown...\n");
         while (active_jobs > 1) { // wait for all but one job to finish (the one calling quit)
             // printf("[DEBUG] Quit waiting for %d jobs to finish...\n", active_jobs);
-            //pthread_cond_broadcast(&queue_not_empty);
+            pthread_cond_broadcast(&queue_not_empty);
             pthread_cond_wait(&queue_not_empty, &lock);
         }
         printf("[DEBUG] All other jobs finished. Proceeding with shutdown...\n");
@@ -187,13 +191,16 @@ int quit() {
         printf("[DEBUG] Lock released...\n");
         pthread_join(t1,NULL);
         pthread_join(t2,NULL);
+        fflush(stdout);
         printf("[DEBUG] Threads joined successfully.\n");
+        pthread_mutex_lock(&lock);
         threadsInitialized =0;
-
+        pthread_mutex_unlock(&lock);
         clearMemory();
         printf("[DEBUG] Memory cleared.\n");
     }
     printf("Bye!\n");
+    fflush(stdout);
     exit(0);
 }
 
@@ -448,14 +455,14 @@ int my_cd(char *dirname){
 
          if (batchScriptProcess(&fileIndex, &length) == 0) {
 
-             PCB* batchPCB = createPCB(fileIndex, length);
+            PCB* batchPCB = createPCB(fileIndex, length);
 
-             addToReadyQueueFront(batchPCB);   // IMPORTANT: head insertion
+            addToReadyQueueFront(batchPCB);   // IMPORTANT: head insertion
 
 
-             pthread_mutex_lock(&lock);
-                      active_jobs++; // Increment here for each unique script
-                      pthread_mutex_unlock(&lock);
+            pthread_mutex_lock(&lock);
+            active_jobs++; // Increment here for each unique script
+            pthread_mutex_unlock(&lock);
          }
      }
 

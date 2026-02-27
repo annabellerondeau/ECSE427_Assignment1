@@ -140,15 +140,17 @@ int scheduler()
     else{
         // Create threads
         // printf("[DEBUG] Initializing threads for the first time...\n");
-        //pthread_mutex_lock(&lock);
+        pthread_mutex_lock(&lock);
         if (!threadsInitialized){
             threadsInitialized++;
             pthread_create(&t1, NULL, manageThread, NULL); // thread ID variable, attributes , the function to run, and its argument
             pthread_create(&t2, NULL, manageThread, NULL);
         }
+        pthread_mutex_unlock(&lock);
         // printf("[DEBUG] Number of threads running: %d\n", threadsInitialized);
-        
+        pthread_mutex_lock(&lock); // ADDED LOCK
         pthread_cond_broadcast(&queue_not_empty); 
+        pthread_mutex_unlock(&lock);
 
 //WAS COMMENTED
         if (backgroundFlag == 0) { 
@@ -166,7 +168,9 @@ int scheduler()
 
 // WAS COMMENTED
         // printf("[DEBUG] Broadcasting to threads and returning to interpreter...\n");
+        pthread_mutex_lock(&lock);
         pthread_cond_broadcast(&queue_not_empty);
+        pthread_mutex_unlock(&lock);
         //pthread_mutex_unlock(&lock);
 
 

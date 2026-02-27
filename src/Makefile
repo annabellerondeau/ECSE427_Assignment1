@@ -31,7 +31,11 @@ testA2: mysh
 			[ $$(grep -o "X" result.tmp | wc -l) -eq $$(grep -o "X" $${t}_result.txt | wc -l) ] && \
 			[ $$(grep -o "YY" result.tmp | wc -l) -eq $$(grep -o "YY" $${t}_result.txt | wc -l) ] && \
 			[ $$(grep -o "ZZZ" result.tmp | wc -l) -eq $$(grep -o "ZZZ" $${t}_result.txt | wc -l) ]; \
-			if [ $$? -eq 0 ]; then echo "$$t: PASS"; else echo "$$t: FAIL"; fi; \
+			if [ $$? -eq 0 ]; then echo "$$t: PASS"; \
+			else\
+				echo "$$t: FAIL";\
+				diff -y result.tmp $${t}_result.txt; \
+			fi; \
 		else \
 			diff -w -q ../test-cases-A2/result.tmp ../test-cases-A2/$${t}_result.txt > /dev/null; \
 			if [ $$? -eq 0 ]; then \
