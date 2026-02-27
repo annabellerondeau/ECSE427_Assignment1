@@ -172,6 +172,7 @@ int quit() {
         pthread_mutex_lock(&lock);
         while (active_jobs > 0) {
             printf("[DEBUG] Quit waiting for %d jobs to finish...\n", active_jobs);
+            pthread_cond_broadcast(&queue_not_empty);
             pthread_cond_wait(&queue_not_empty, &lock);
         }
         pthread_mutex_unlock(&lock);
