@@ -146,17 +146,21 @@ int scheduler()
         pthread_mutex_unlock(&lock);
 
 
-        if (backgroundFlag == 0) { // test from gemini
-            pthread_mutex_lock(&lock);
-            while (active_jobs > 0) {
-                // Wait for worker threads to signal that active_jobs reached 0
-                pthread_cond_wait(&queue_not_empty, &lock);
-            }
-            pthread_mutex_unlock(&lock);
-
-            // In foreground mode, we can clear memory once jobs are done
-            clearMemory();
-        }
+       // if (backgroundFlag == 0) { // test from gemini
+//            pthread_mutex_lock(&lock);
+//            while (active_jobs > 0) {
+//                // Wait for worker threads to signal that active_jobs reached 0
+//                pthread_cond_wait(&queue_not_empty, &lock);
+//            }
+//            pthread_mutex_unlock(&lock);
+//
+//            // In foreground mode, we can clear memory once jobs are done
+//            clearMemory();
+      //  }
+          pthread_join(t1, NULL);
+          pthread_join(t2, NULL);
+          clearMemory();
+          threadsInitialized = 0;
 
         // Process is RR or RR30
     }
