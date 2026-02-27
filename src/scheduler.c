@@ -259,6 +259,7 @@ bool isReadyQueueEmpty()
 }
 
 void* manageThread(void *args){
+    printf("[DEBUG] Thread spawned and alive!\n");
     int errCode = 0;
     while (1){ // as RR keeps adding to queue and we have 2 threads we cannot terminate thread on HEAD!= NULL
         pthread_mutex_lock(&lock); //lock queeue before checking
