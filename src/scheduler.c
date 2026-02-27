@@ -144,6 +144,7 @@ int scheduler()
         }
         printf("Thread started\n");
         if (backgroundFlag == 0) {
+            threadsInitialized = 0;
             pthread_join(t1, NULL);
             pthread_join(t2, NULL);
             clearMemory();
