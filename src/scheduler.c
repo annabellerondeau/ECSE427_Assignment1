@@ -12,7 +12,6 @@
 PCB* head = NULL;
 PCB* tail = NULL;
 char *policy = "FCFS"; // default policy is FCFS, can be changed by exec command
-int mtFlag = 0; // global variable defined in header
 pthread_t t1;
 pthread_t t2;
 int threadsInitialized = 0;
