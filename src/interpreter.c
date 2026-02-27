@@ -416,6 +416,10 @@ int my_cd(char *dirname){
          }
          processArray[counter] = createPCB(fileIndex, length);
          // processSizeArray[counter] = length; // For SJF
+
+         pthread_mutex_lock(&lock);
+         active_jobs++; // Increment here for each unique script
+         pthread_mutex_unlock(&lock);
      }
 
      // Second add everything to queue

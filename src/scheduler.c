@@ -157,7 +157,7 @@ int scheduler()
 void addToReadyQueue(PCB* process)
 {
     pthread_mutex_lock(&lock);
-    active_jobs++;
+    //active_jobs++;
     process->next = NULL;
 
     if (strcmp(policy, "SJF") == 0)
