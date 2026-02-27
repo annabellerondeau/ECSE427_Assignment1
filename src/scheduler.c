@@ -18,6 +18,7 @@ pthread_t t1;
 pthread_t t2;
 int threadsInitialized = 0;
 int active_jobs = 0;
+int shutting_down = 0; // flag to signal threads to exit when quit is called
 
 //global MT controls
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
@@ -145,22 +146,28 @@ int scheduler()
             pthread_create(&t1, NULL, manageThread, NULL); // thread ID variable, attributes , the function to run, and its argument
             pthread_create(&t2, NULL, manageThread, NULL);
         }
+        printf("[DEBUG] Number of threads running: %d\n", threadsInitialized);
+        
+        pthread_cond_broadcast(&queue_not_empty); 
 
+//WAS COMMENTED
+        if (backgroundFlag == 0) { 
+            pthread_mutex_lock(&lock);
+            while (active_jobs > 0 && pthread_equal(pthread_self(), mainThreadID)) { // only wait if we are in the main thread and there are active jobs
+                printf("[DEBUG] Thread %lu waiting for active_jobs to reach 0 (Current: %d)\n", (unsigned long)pthread_self(), active_jobs);
+                // Wait for worker threads to signal that active_jobs reached 0
+                pthread_cond_wait(&queue_not_empty, &lock);
+            }
+            pthread_mutex_unlock(&lock);
 
-       // if (backgroundFlag == 0) { // test from gemini
-//            pthread_mutex_lock(&lock);
-//            while (active_jobs > 0) {
-//                // Wait for worker threads to signal that active_jobs reached 0
-//                pthread_cond_wait(&queue_not_empty, &lock);
-//            }
-//            pthread_mutex_unlock(&lock);
-//
-//            // In foreground mode, we can clear memory once jobs are done
-//            clearMemory();
-      //  }
-            printf("[DEBUG] Broadcasting to threads and returning to interpreter...\n");
-          pthread_cond_broadcast(&queue_not_empty);
-          //pthread_mutex_unlock(&lock);
+            // In foreground mode, we can clear memory once jobs are done
+            clearMemory();
+        }
+
+// WAS COMMENTED
+        printf("[DEBUG] Broadcasting to threads and returning to interpreter...\n");
+        pthread_cond_broadcast(&queue_not_empty);
+        //pthread_mutex_unlock(&lock);
 
 
         // Process is RR or RR30
@@ -264,11 +271,11 @@ void* manageThread(void *args){
     while (1){ // as RR keeps adding to queue and we have 2 threads we cannot terminate thread on HEAD!= NULL
         pthread_mutex_lock(&lock); //lock queeue before checking
         // FOUND ONLINE
-        while (head == NULL && active_jobs > 0) {
+        while (head == NULL && active_jobs > 0 && !shutting_down) { // if queue is empty, wait for signal that it's not empty or that we are shutting down
             pthread_cond_wait(&queue_not_empty, &lock);
         } // FOUND ONLINE
 
-        if (active_jobs == 0) {
+        if (shutting_down || active_jobs == 0) { 
             pthread_mutex_unlock(&lock);
             break;
         }

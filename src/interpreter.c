@@ -170,11 +170,13 @@ int quit() {
     pthread_cond_broadcast(&queue_not_empty); // safety poke
     if (mtFlag && threadsInitialized){ // if process was multithreaded
         pthread_mutex_lock(&lock);
-        while (active_jobs > 0) {
+        while (active_jobs > 1) { // wait for all but one job to finish (the one calling quit)
             printf("[DEBUG] Quit waiting for %d jobs to finish...\n", active_jobs);
-            pthread_cond_broadcast(&queue_not_empty);
+            //pthread_cond_broadcast(&queue_not_empty);
             pthread_cond_wait(&queue_not_empty, &lock);
         }
+        shutting_down = 1; // signal threads to exit
+        pthread_cond_broadcast(&queue_not_empty); // wake up threads so they can exit
         pthread_mutex_unlock(&lock);
 
 //        active_jobs = 0;

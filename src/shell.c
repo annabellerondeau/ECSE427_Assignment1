@@ -8,6 +8,8 @@
 #include "scheduler.h"
 
 int parseInput(char ui[]);
+pthread_t mainThreadID;
+int mainThreadInitialized = 0;
 
 // Start of everything
 int main(int argc, char *argv[]) {
@@ -17,6 +19,9 @@ int main(int argc, char *argv[]) {
     char prompt = '$';  				// Shell prompt
     char userInput[MAX_USER_INPUT];		// user's input stored here
     int errorCode = 0;					// zero means no error, default
+
+    mainThreadID = pthread_self(); // store main thread ID for later use in quit command
+    mainThreadInitialized = 1; // set flag to indicate main thread ID has been initialized
 
     //init user input
     for (int i = 0; i < MAX_USER_INPUT; i++) {

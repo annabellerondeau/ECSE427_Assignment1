@@ -24,4 +24,5 @@ extern pthread_cond_t queue_not_empty;
 extern PCB* head;
 extern PCB* tail;
 extern int threadsInitialized;
+extern int shutting_down;
 #endif
