@@ -157,10 +157,9 @@ int scheduler()
 //            // In foreground mode, we can clear memory once jobs are done
 //            clearMemory();
       //  }
-          pthread_join(t1, NULL);
-          pthread_join(t2, NULL);
-          clearMemory();
-          threadsInitialized = 0;
+          pthread_cond_broadcast(&queue_not_empty);
+          pthread_mutex_unlock(&lock);
+
 
         // Process is RR or RR30
     }

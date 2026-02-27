@@ -177,7 +177,7 @@ int quit() {
         pthread_join(t2,NULL);
 
         threadsInitialized =0;
-        //clearMemory();
+        clearMemory();
     }
     printf("Bye!\n");
     exit(0);
