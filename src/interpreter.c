@@ -34,6 +34,7 @@ int exec(char **scriptsAndPolicy, int numOfArgs);
 int batchToScript(int *fileIndex, int *len);
 int backgroundFlag =0;
 int mtFlag=0;
+void addToReadyQueueFront(PCB* pcb);
 
 int badcommand() {
     printf("Unknown Command\n");
@@ -173,7 +174,7 @@ int quit() {
 
         pthread_join(t1,NULL);
         pthread_join(t2,NULL);
-        
+
         clearMemory();
     }
     printf("Bye!\n");
