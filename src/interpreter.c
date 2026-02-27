@@ -421,7 +421,7 @@ int my_cd(char *dirname){
          int fileIndex;
          int length;
 
-         if (loadBatchScript(&fileIndex, &length) == 0) {
+         if (batchToScript(&fileIndex, &len) == 0) {
 
              PCB* batchPCB = createPCB(fileIndex, length);
 
