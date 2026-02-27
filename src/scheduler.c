@@ -143,10 +143,10 @@ int scheduler()
             pthread_create(&t2, NULL, manageThread, NULL);
         }
         if (backgroundFlag == 0) {
-            threadsInitialized = 0;
             pthread_join(t1, NULL);
             pthread_join(t2, NULL);
             clearMemory();
+            threadsInitialized = 0;
         }
 
         // Process is RR or RR30
@@ -292,6 +292,7 @@ void* manageThread(void *args){
         {
             pthread_mutex_lock(&lock);
             active_jobs--;
+            pthread_cond_broadcast(&queue_not_empty);
             pthread_mutex_unlock(&lock);
             free(current);
         }
