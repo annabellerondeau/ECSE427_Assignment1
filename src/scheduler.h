@@ -18,5 +18,8 @@ extern int mtFlag;
 extern int backgroundFlag;
 extern pthread_t t1;
 extern pthread_t t2;
+extern pthread_mutex_t lock;
+extern int active_jobs ;
+extern pthread_cond_t queue_not_empty;
 
 #endif
