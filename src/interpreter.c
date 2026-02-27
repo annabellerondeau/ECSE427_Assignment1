@@ -31,7 +31,7 @@ int isAlphaNumeric(char word[]);
 int tokenEnding(char c);
 int prioritization(const void *c1, const void *c2);
 int exec(char **scriptsAndPolicy, int numOfArgs);
-int batchToScript(int *fileIndex, int *len);
+int batchScriptProcess(int *fileIndex, int *len);
 int backgroundFlag =0;
 int mtFlag=0;
 void addToReadyQueueFront(PCB* pcb);
@@ -426,28 +426,31 @@ int my_cd(char *dirname){
      for (int counter=0; numOfProgs > counter; counter++){
          addToReadyQueue(processArray[counter]); // add process to ready queue
      }
+
      if (backgroundFlag == 1) {
 
          int fileIndex;
          int length;
 
-         if (batchToScript(&fileIndex, &length) == 0) {
+         if (batchScriptProcess(&fileIndex, &length) == 0) {
 
              PCB* batchPCB = createPCB(fileIndex, length);
 
              addToReadyQueueFront(batchPCB);   // IMPORTANT: head insertion
-         }
 
-         backgroundFlag = 0;  // reset
+
+             pthread_mutex_lock(&lock);
+                      active_jobs++; // Increment here for each unique script
+                      pthread_mutex_unlock(&lock);
+         }
      }
 
-     return scheduler(); // Scheduler clears memory
-
-
-     //return 0; // if background flag is on we don't run the scheduler so we return 0 for success
+     int code = scheduler(); // Scheduler clears memory
+     backgroundFlag = 0;
+     return code; // if background flag is on we don't run the scheduler so we return 0 for success
  }
 
-int batchToScript(int *fileIndex, int *len) {
+int batchScriptProcess(int *fileIndex, int *len) {
 
     FILE *temp = tmpfile();
     if (temp == NULL) return -1;

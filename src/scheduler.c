@@ -137,16 +137,25 @@ int scheduler()
     }
     else{
         // Create threads
+        pthread_mutex_lock(&lock);
         if (!threadsInitialized){
             threadsInitialized++;
             pthread_create(&t1, NULL, manageThread, NULL); // thread ID variable, attributes , the function to run, and its argument
             pthread_create(&t2, NULL, manageThread, NULL);
         }
-        if (backgroundFlag == 0) {
-            pthread_join(t1, NULL);
-            pthread_join(t2, NULL);
+        pthread_mutex_unlock(&lock);
+
+
+        if (backgroundFlag == 0) { // test from gemini
+            pthread_mutex_lock(&lock);
+            while (active_jobs > 0) {
+                // Wait for worker threads to signal that active_jobs reached 0
+                pthread_cond_wait(&queue_not_empty, &lock);
+            }
+            pthread_mutex_unlock(&lock);
+
+            // In foreground mode, we can clear memory once jobs are done
             clearMemory();
-            threadsInitialized = 0;
         }
 
         // Process is RR or RR30
@@ -248,7 +257,6 @@ void* manageThread(void *args){
     int errCode = 0;
     while (1){ // as RR keeps adding to queue and we have 2 threads we cannot terminate thread on HEAD!= NULL
         pthread_mutex_lock(&lock); //lock queeue before checking
-        printf("Active jobs: %d\n", active_jobs); // DEBUG
         // FOUND ONLINE
         while (head == NULL && active_jobs > 0) {
             pthread_cond_wait(&queue_not_empty, &lock);
