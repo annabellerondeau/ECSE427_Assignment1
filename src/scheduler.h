@@ -21,5 +21,6 @@ extern pthread_t t2;
 extern pthread_mutex_t lock;
 extern int active_jobs ;
 extern pthread_cond_t queue_not_empty;
-
+extern PCB* head;
+extern PCB* tail;
 #endif

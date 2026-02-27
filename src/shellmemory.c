@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <scheduler.h>
+
 
 #include "shellmemory.h"
 #include "shell.h"

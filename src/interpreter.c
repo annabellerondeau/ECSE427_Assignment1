@@ -463,6 +463,6 @@ int batchToScript(int *fileIndex, int *len) {
 
 void addToReadyQueueFront(PCB* pcb)
 {
-    pcb->next = readyQueueHead;
-    readyQueueHead = pcb;
+    pcb->next = head;
+    head = pcb;
 }
