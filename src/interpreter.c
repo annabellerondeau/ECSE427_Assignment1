@@ -167,11 +167,15 @@ source SCRIPT.TXT	Executes the file SCRIPT.TXT\n ";
 
 int quit() {
     if (mtFlag && threadsInitialized){ // if process was multithreaded
-
         pthread_mutex_lock(&lock);
-        active_jobs = 0;
-        pthread_cond_broadcast(&queue_not_empty);
+        while (active_jobs > 0) {
+            pthread_cond_wait(&queue_not_empty, &lock);
+        }
         pthread_mutex_unlock(&lock);
+
+//        active_jobs = 0;
+//        pthread_cond_broadcast(&queue_not_empty);
+//        pthread_mutex_unlock(&lock);
 
         pthread_join(t1,NULL);
         pthread_join(t2,NULL);

@@ -143,7 +143,6 @@ int scheduler()
             pthread_create(&t1, NULL, manageThread, NULL); // thread ID variable, attributes , the function to run, and its argument
             pthread_create(&t2, NULL, manageThread, NULL);
         }
-        pthread_mutex_unlock(&lock);
 
 
        // if (backgroundFlag == 0) { // test from gemini
