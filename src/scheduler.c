@@ -12,10 +12,11 @@
 PCB* head = NULL;
 PCB* tail = NULL;
 char *policy = "FCFS"; // default policy is FCFS, can be changed by exec command
+int maxInstructionsRR = 2; // for RR
+
 pthread_t t1;
 pthread_t t2;
 int threadsInitialized = 0;
-int maxInstructionsRR = 2; // for RR
 int active_jobs = 0;
 
 //global MT controls

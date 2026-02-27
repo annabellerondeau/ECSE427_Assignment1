@@ -359,6 +359,7 @@ int my_cd(char *dirname){
      if ((strcmp(scriptsAndPolicy[endIndex], "#") == 0)){
          backgroundFlag = 1;
          endIndex--;
+
      }
 
      // Identify policy
@@ -415,11 +416,53 @@ int my_cd(char *dirname){
      for (int counter=0; numOfProgs > counter; counter++){
          addToReadyQueue(processArray[counter]); // add process to ready queue
      }
+     if (backgroundFlag == 1) {
 
-     if (backgroundFlag == 0)
-     {
-        return scheduler(); // Scheduler clears memory
+         int fileIndex;
+         int length;
+
+         if (loadBatchScript(&fileIndex, &length) == 0) {
+
+             PCB* batchPCB = createPCB(fileIndex, length);
+
+             addToReadyQueueFront(batchPCB);   // IMPORTANT: head insertion
+         }
+
+         backgroundFlag = 0;  // reset
      }
 
-     return 0; // if background flag is on we don't run the scheduler so we return 0 for success
+     return scheduler(); // Scheduler clears memory
+
+
+     //return 0; // if background flag is on we don't run the scheduler so we return 0 for success
  }
+
+int batchToScript(int *fileIndex, int *len) {
+    char line[MAX_USER_INPUT];
+
+    int startIndex = getNextFreeMemoryIndex();  // however you track this
+    int linesLoaded = 0;
+
+    while (fgets(line, MAX_USER_INPUT - 1, stdin) != NULL) {
+
+        if (storeLineInMemory(line) != 0) {  // reuse your existing loader logic
+            return -1;
+        }
+
+        linesLoaded++;
+    }
+
+    if (linesLoaded == 0)
+        return -1;
+
+    *fileIndex = startIndex;
+    *len = linesLoaded;
+
+    return 0;
+}
+
+void addToReadyQueueFront(PCB* pcb)
+{
+    pcb->next = readyQueueHead;
+    readyQueueHead = pcb;
+}
