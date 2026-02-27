@@ -173,6 +173,8 @@ int quit() {
 
         pthread_join(t1,NULL);
         pthread_join(t2,NULL);
+        
+        clearMemory();
     }
     printf("Bye!\n");
     exit(0);
@@ -422,7 +424,7 @@ int my_cd(char *dirname){
          int fileIndex;
          int length;
 
-         if (batchToScript(&fileIndex, &len) == 0) {
+         if (batchToScript(&fileIndex, &length) == 0) {
 
              PCB* batchPCB = createPCB(fileIndex, length);
 
@@ -439,31 +441,29 @@ int my_cd(char *dirname){
  }
 
 int batchToScript(int *fileIndex, int *len) {
+
+    FILE *temp = tmpfile();
+    if (temp == NULL) return -1;
+
     char line[MAX_USER_INPUT];
 
-    int startIndex = getNextFreeMemoryIndex();  // however you track this
-    int linesLoaded = 0;
-
     while (fgets(line, MAX_USER_INPUT - 1, stdin) != NULL) {
-
-        if (storeLineInMemory(line) != 0) {  // reuse your existing loader logic
-            return -1;
-        }
-
-        linesLoaded++;
+        fputs(line, temp);
     }
 
-    if (linesLoaded == 0)
-        return -1;
+    rewind(temp);
 
-    *fileIndex = startIndex;
-    *len = linesLoaded;
+    int result = loadFileMemory(temp, fileIndex, len);
+    fclose(temp);
 
-    return 0;
+    return result;
 }
 
 void addToReadyQueueFront(PCB* pcb)
 {
+    pthread_mutex_lock(&lock);
     pcb->next = head;
     head = pcb;
+    pthread_cond_signal(&queue_not_empty);
+    pthread_mutex_unlock(&lock);
 }
