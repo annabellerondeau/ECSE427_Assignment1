@@ -31,6 +31,7 @@ int isAlphaNumeric(char word[]);
 int tokenEnding(char c);
 int prioritization(const void *c1, const void *c2);
 int exec(char **scriptsAndPolicy, int numOfArgs);
+int batchToScript(int *fileIndex, int *len);
 int backgroundFlag =0;
 int mtFlag=0;
 
