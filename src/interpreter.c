@@ -31,6 +31,7 @@ int isAlphaNumeric(char word[]);
 int tokenEnding(char c);
 int prioritization(const void *c1, const void *c2);
 int exec(char **scriptsAndPolicy, int numOfArgs);
+int backgroundFlag =0;
 
 int badcommand() {
     printf("Unknown Command\n");
@@ -348,7 +349,6 @@ int my_cd(char *dirname){
  int exec(char *scriptsAndPolicy[], int numOfArgs){
 
      // Identify flags
-     int backgroundFlag = 0; // 0 means off
      int endIndex = numOfArgs-1;
 
      if ((strcmp(scriptsAndPolicy[endIndex], "MT") == 0)){
