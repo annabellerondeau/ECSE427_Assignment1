@@ -167,6 +167,7 @@ source SCRIPT.TXT	Executes the file SCRIPT.TXT\n ";
 
 int quit() {
     printf("[DEBUG] Quit called. MT: %d, Active Jobs: %d\n", mtFlag, active_jobs);
+    pthread_cond_broadcast(&queue_not_empty); // safety poke
     if (mtFlag && threadsInitialized){ // if process was multithreaded
         pthread_mutex_lock(&lock);
         while (active_jobs > 0) {

@@ -139,7 +139,7 @@ int scheduler()
     else{
         // Create threads
         printf("[DEBUG] Initializing threads for the first time...\n");
-        pthread_mutex_lock(&lock);
+        //pthread_mutex_lock(&lock);
         if (!threadsInitialized){
             threadsInitialized++;
             pthread_create(&t1, NULL, manageThread, NULL); // thread ID variable, attributes , the function to run, and its argument
@@ -160,7 +160,7 @@ int scheduler()
       //  }
             printf("[DEBUG] Broadcasting to threads and returning to interpreter...\n");
           pthread_cond_broadcast(&queue_not_empty);
-          pthread_mutex_unlock(&lock);
+          //pthread_mutex_unlock(&lock);
 
 
         // Process is RR or RR30
@@ -311,4 +311,5 @@ void* manageThread(void *args){
             free(current);
         }
     }
+    printf("[DEBUG] THREAD %lu: Job finished. Remaining active_jobs: %d\n", (unsigned long)pthread_self(), active_jobs);
 }
