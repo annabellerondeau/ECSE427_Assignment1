@@ -27,6 +27,7 @@ void* manageThread(void *args);
 
 int scheduler()
 {
+    printf("[DEBUG] Entered Scheduler. MT Mode: %d, active_jobs: %d\n", mtFlag, active_jobs);
     int errCode = 0;
     if (strcmp(policy, "RR30") == 0) maxInstructionsRR = 30;
     int maxInstructionsAging = 1; // for AGING
@@ -137,6 +138,7 @@ int scheduler()
     }
     else{
         // Create threads
+        printf("[DEBUG] Initializing threads for the first time...\n");
         pthread_mutex_lock(&lock);
         if (!threadsInitialized){
             threadsInitialized++;
@@ -156,6 +158,7 @@ int scheduler()
 //            // In foreground mode, we can clear memory once jobs are done
 //            clearMemory();
       //  }
+            printf("[DEBUG] Broadcasting to threads and returning to interpreter...\n");
           pthread_cond_broadcast(&queue_not_empty);
           pthread_mutex_unlock(&lock);
 

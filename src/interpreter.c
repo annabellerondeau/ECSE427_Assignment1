@@ -166,9 +166,11 @@ source SCRIPT.TXT	Executes the file SCRIPT.TXT\n ";
 }
 
 int quit() {
+    printf("[DEBUG] Quit called. MT: %d, Active Jobs: %d\n", mtFlag, active_jobs);
     if (mtFlag && threadsInitialized){ // if process was multithreaded
         pthread_mutex_lock(&lock);
         while (active_jobs > 0) {
+            printf("[DEBUG] Quit waiting for %d jobs to finish...\n", active_jobs);
             pthread_cond_wait(&queue_not_empty, &lock);
         }
         pthread_mutex_unlock(&lock);
@@ -179,9 +181,11 @@ int quit() {
 
         pthread_join(t1,NULL);
         pthread_join(t2,NULL);
-
+        printf("[DEBUG] Threads joined successfully.\n");
         threadsInitialized =0;
+
         clearMemory();
+        printf("[DEBUG] Memory cleared.\n");
     }
     printf("Bye!\n");
     exit(0);
