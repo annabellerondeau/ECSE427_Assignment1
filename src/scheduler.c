@@ -155,7 +155,7 @@ int scheduler()
 //WAS COMMENTED
         if (backgroundFlag == 0) { 
             pthread_mutex_lock(&lock);
-            while (active_jobs > 1) { //} && pthread_equal(pthread_self(), mainThreadID)) { // only wait if we are in the main thread and there are active jobs
+            while (active_jobs > 0) { //} && pthread_equal(pthread_self(), mainThreadID)) { // only wait if we are in the main thread and there are active jobs
                 // printf("[DEBUG] Thread %lu waiting for active_jobs to reach 0 (Current: %d)\n", (unsigned long)pthread_self(), active_jobs);
                 // Wait for worker threads to signal that active_jobs reached 0
                 pthread_cond_wait(&queue_not_empty, &lock);
@@ -274,15 +274,20 @@ void* manageThread(void *args){
     int errCode = 0;
     while (1){ // as RR keeps adding to queue and we have 2 threads we cannot terminate thread on HEAD!= NULL
         pthread_mutex_lock(&lock); //lock queeue before checking
-        // FOUND ONLINE
+
+        printf("[DEBUG] Manage thread -> active jobs: %d\n", active_jobs);
         while (head == NULL && active_jobs > 0 && !shutting_down) { // if queue is empty, wait for signal that it's not empty or that we are shutting down
             pthread_cond_wait(&queue_not_empty, &lock);
-        } // FOUND ONLINE
+        } 
+
+        printf("[DEBUG] Manage thread -> exited waiting while loop. Active jobs: %d\n", active_jobs);
 
         if (shutting_down || active_jobs == 0) { 
             pthread_mutex_unlock(&lock);
             break;
         }
+
+        
 
         PCB* current = head; /// pop head of queue
 
@@ -313,14 +318,28 @@ void* manageThread(void *args){
         {
             addToReadyQueue(current);
         }
-        else // free memory
-        {
+        // else // free memory
+        // {
+        //     pthread_mutex_lock(&lock);
+        //     active_jobs--;
+        //     // // printf("[DEBUG] Decremented active_jobs. Current: %d\n", active_jobs);
+        //     pthread_cond_broadcast(&queue_not_empty);
+        //     pthread_mutex_unlock(&lock);
+        //     free(current);
+        // }
+        else { 
+            // PCB is finished
+            free(current); 
+            
             pthread_mutex_lock(&lock);
-            active_jobs--;
-            // // printf("[DEBUG] Decremented active_jobs. Current: %d\n", active_jobs);
-            pthread_cond_broadcast(&queue_not_empty);
+            active_jobs--; 
+            pthread_cond_broadcast(&queue_not_empty); // Wake up the waiter
+            
+            if (shutting_down) {
+                pthread_mutex_unlock(&lock);
+                return NULL; 
+            }
             pthread_mutex_unlock(&lock);
-            free(current);
         }
     }
     // printf("[DEBUG] THREAD %lu: Job finished. Remaining active_jobs: %d\n", (unsigned long)pthread_self(), active_jobs);

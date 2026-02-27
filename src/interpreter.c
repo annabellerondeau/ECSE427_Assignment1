@@ -166,7 +166,8 @@ source SCRIPT.TXT	Executes the file SCRIPT.TXT\n ";
 }
 
 int quit() {
-    printf("[DEBUG] Quit called. MT: %d, Active Jobs: %d\n", mtFlag, active_jobs);
+    active_jobs--;
+    printf("[DEBUG] Quit called. MT: %d, Active Jobs: %d, decremented active jobs\n", mtFlag, active_jobs);
     pthread_mutex_lock(&lock);
     pthread_cond_broadcast(&queue_not_empty); // safety poke
     pthread_mutex_unlock(&lock);
@@ -175,7 +176,7 @@ int quit() {
         printf("[DEBUG] Lock acquired before waiting for jobs to finish...\n");
         printf("[DEBUG] Active jobs at quit: %d\n", active_jobs);
         printf("[DEBUG] %s", active_jobs > 1 ? "Waiting for active jobs to finish...\n" : "No active jobs. Proceeding with shutdown...\n");
-        while (active_jobs > 1) { // wait for all but one job to finish (the one calling quit)
+        while (active_jobs > 0) { // wait for all but one job to finish (the one calling quit)
             // printf("[DEBUG] Quit waiting for %d jobs to finish...\n", active_jobs);
             pthread_cond_broadcast(&queue_not_empty);
             pthread_cond_wait(&queue_not_empty, &lock);
