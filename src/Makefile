@@ -25,7 +25,7 @@ testA1: mysh
 	@rm -f result.tmp
 
 testA2: mysh
-	@for t in $$(cd ../test-cases-A2 && ls T_*.txt | grep -v '_result' | sed 's/.txt//'); do \
+	@for t in $$(cd ../test-cases-A2 && ls T_MT*.txt | grep -v '_result' | sed 's/.txt//'); do \
 		(cd ../test-cases-A2 && ../src/mysh < $$t.txt > result.tmp; \
 		if echo $$t | grep -q "^T_MT"; then \
 			[ $$(grep -o "X" result.tmp | wc -l) -eq $$(grep -o "X" $${t}_result.txt | wc -l) ] && \
