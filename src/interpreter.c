@@ -168,18 +168,24 @@ source SCRIPT.TXT	Executes the file SCRIPT.TXT\n ";
 int quit() {
     printf("Bye!\n");
     fflush(stdout);
-    printf("[DEBUG] Decrementing for the last job - quit");
+    printf("[DEBUG] Decrementing for the last job - quit\n");
+
+    pthread_mutex_lock(&lock);
     active_jobs--;
+    pthread_mutex_unlock(&lock);
+
     printf("[DEBUG] Quit called. MT: %d, Active Jobs: %d, decremented active jobs\n", mtFlag, active_jobs);
+
     pthread_mutex_lock(&lock);
     pthread_cond_broadcast(&queue_not_empty); // safety poke
     pthread_mutex_unlock(&lock);
+
     if (mtFlag && threadsInitialized){ // if process was multithreaded
         pthread_mutex_lock(&lock);
         printf("[DEBUG] Lock acquired before waiting for jobs to finish...\n");
         printf("[DEBUG] Active jobs at quit: %d\n", active_jobs);
         printf("[DEBUG] %s", active_jobs > 1 ? "Waiting for active jobs to finish...\n" : "No active jobs. Proceeding with shutdown...\n");
-        while (active_jobs > 0) { // wait for all but one job to finish (the one calling quit)
+        while (active_jobs >= 0) { // wait for all but one job to finish (the one calling quit)
             // printf("[DEBUG] Quit waiting for %d jobs to finish...\n", active_jobs);
             pthread_cond_broadcast(&queue_not_empty);
             pthread_cond_wait(&queue_not_empty, &lock);
@@ -188,23 +194,18 @@ int quit() {
         shutting_down = 1; // signal threads to exit
         pthread_cond_broadcast(&queue_not_empty); // wake up threads so they can exit
         pthread_mutex_unlock(&lock);
-
-//        active_jobs = 0;
-//        pthread_cond_broadcast(&queue_not_empty);
-//        pthread_mutex_unlock(&lock);
         printf("[DEBUG] Lock released...\n");
         pthread_join(t1,NULL);
         pthread_join(t2,NULL);
         fflush(stdout);
         printf("[DEBUG] Threads joined successfully.\n");
+
         pthread_mutex_lock(&lock);
         threadsInitialized =0;
         pthread_mutex_unlock(&lock);
         clearMemory();
         printf("[DEBUG] Memory cleared.\n");
     }
-    //printf("Bye!\n");
-    // fflush(stdout);
     exit(0);
 }
 

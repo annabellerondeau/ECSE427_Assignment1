@@ -287,7 +287,8 @@ void* manageThread(void *args){
 
         printf("[DEBUG] Manage thread -> exited waiting while loop. Active jobs: %d\n", active_jobs);
 
-        if (shutting_down || active_jobs == 0) { 
+        if (shutting_down || (active_jobs == 0 && head == NULL) )
+        { 
             pthread_mutex_unlock(&lock);
             break;
         }
@@ -332,13 +333,14 @@ void* manageThread(void *args){
         //     pthread_mutex_unlock(&lock);
         //     free(current);
         // }
-        else { 
+        else 
+        { 
             // PCB is finished
             free(current); 
             
             pthread_mutex_lock(&lock);
             active_jobs--; 
-            pthread_cond_broadcast(&queue_not_empty); // Wake up the waiter
+            pthread_cond_broadcast(&queue_not_empty); 
             
             if (shutting_down) {
                 pthread_mutex_unlock(&lock);
