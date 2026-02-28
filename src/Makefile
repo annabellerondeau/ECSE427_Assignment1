@@ -27,8 +27,8 @@ testA1: mysh
 testA2: mysh
 	@for i in $$(seq 1 100); do \
      	echo "=== RUN $$i ==="; \
-            for t in $$(cd ../test-cases-A2 && ls T_MT*.txt | grep -v '_result' | sed 's/.txt//'); do \
-                (cd ../test-cases-A2 && ../src/mysh < $$t.txt > result.tmp; \
+            for t in $$(cd ../test-cases && ls T_MT*.txt | grep -v '_result' | sed 's/.txt//'); do \
+                (cd ../test-cases && ../src/mysh < $$t.txt > result.tmp; \
                 if echo $$t | grep -q "^T_MT"; then \
                     [ $$(grep -o "X" result.tmp | wc -l) -eq $$(grep -o "X" $${t}_result.txt | wc -l) ] && \
                     [ $$(grep -o "YY" result.tmp | wc -l) -eq $$(grep -o "YY" $${t}_result.txt | wc -l) ] && \
@@ -39,7 +39,7 @@ testA2: mysh
                         diff -y result.tmp $${t}_result.txt; \
                     fi; \
                 else \
-                    diff -w -q ../test-cases-A2/result.tmp ../test-cases-A2/$${t}_result.txt > /dev/null; \
+                    diff -w -q ../test-cases/result.tmp ../test-cases/$${t}_result.txt > /dev/null; \
                     if [ $$? -eq 0 ]; then \
                         echo "$$t: PASS"; \
                     elif [ -f $${t}_result2.txt ] && diff -w -B -q result.tmp $${t}_result2.txt > /dev/null; then \

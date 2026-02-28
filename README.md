@@ -8,4 +8,4 @@ To compile, run the following command:
 
 ## Running Tests
 To run all the tests and compare outputs. run the following command from the test-cases folder:  
-**make test**
+**make testA2**
