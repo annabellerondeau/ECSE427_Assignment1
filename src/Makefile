@@ -25,7 +25,7 @@ testA1: mysh
 	@rm -f result.tmp
 
 testA2: mysh
-	@for i in $$(seq 1 10); do \
+	@for i in $$(seq 1 100); do \
      	echo "=== RUN $$i ==="; \
             for t in $$(cd ../test-cases-A2 && ls T_MT*.txt | grep -v '_result' | sed 's/.txt//'); do \
                 (cd ../test-cases-A2 && ../src/mysh < $$t.txt > result.tmp; \
