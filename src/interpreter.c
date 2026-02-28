@@ -147,7 +147,6 @@ int interpreter(char *command_args[], int args_size) {
         return exec(command_args+1, args_size-1);
     }
     else{ // if none of the known commands are input
-    //}
         return badcommand();
     }
 }
@@ -168,43 +167,35 @@ source SCRIPT.TXT	Executes the file SCRIPT.TXT\n ";
 int quit() {
     printf("Bye!\n");
     fflush(stdout);
-    printf("[DEBUG] Decrementing for the last job - quit\n");
 
     pthread_mutex_lock(&lock);
     active_jobs--;
     pthread_mutex_unlock(&lock);
 
-    printf("[DEBUG] Quit called. MT: %d, Active Jobs: %d, decremented active jobs\n", mtFlag, active_jobs);
-
     pthread_mutex_lock(&lock);
-    pthread_cond_broadcast(&queue_not_empty); // safety poke
+    pthread_cond_broadcast(&queue_not_empty); 
     pthread_mutex_unlock(&lock);
 
     if (mtFlag && threadsInitialized){ // if process was multithreaded
         pthread_mutex_lock(&lock);
-        printf("[DEBUG] Lock acquired before waiting for jobs to finish...\n");
-        printf("[DEBUG] Active jobs at quit: %d\n", active_jobs);
-        printf("[DEBUG] %s", active_jobs > 1 ? "Waiting for active jobs to finish...\n" : "No active jobs. Proceeding with shutdown...\n");
+
         while (active_jobs >= 0) { // wait for all but one job to finish (the one calling quit)
-            // printf("[DEBUG] Quit waiting for %d jobs to finish...\n", active_jobs);
             pthread_cond_broadcast(&queue_not_empty);
             pthread_cond_wait(&queue_not_empty, &lock);
         }
-        printf("[DEBUG] All other jobs finished. Proceeding with shutdown...\n");
+
         shutting_down = 1; // signal threads to exit
         pthread_cond_broadcast(&queue_not_empty); // wake up threads so they can exit
         pthread_mutex_unlock(&lock);
-        printf("[DEBUG] Lock released...\n");
+
         pthread_join(t1,NULL);
         pthread_join(t2,NULL);
-        fflush(stdout);
-        printf("[DEBUG] Threads joined successfully.\n");
 
         pthread_mutex_lock(&lock);
         threadsInitialized =0;
         pthread_mutex_unlock(&lock);
+
         clearMemory();
-        printf("[DEBUG] Memory cleared.\n");
     }
     exit(0);
 }
@@ -230,7 +221,6 @@ int print(char *var) {
 
 int source(char *script) {
     int errCode = 0;
-    //char line[MAX_USER_INPUT];
     FILE *p = fopen(script, "rt");      // the program is in a file
 
     if (p == NULL) {
@@ -245,7 +235,7 @@ int source(char *script) {
     fclose(p);
 
     if (load != 0) { // fix: error message ?
-        printf("DEBUG load failed \n");
+        printf("Error trying to load the file into memory \n");
         return badcommandFileDoesNotExist();
     }
 
@@ -253,21 +243,8 @@ int source(char *script) {
     addToReadyQueue(process); // add process to ready queue
 
     errCode = scheduler(); // run processes in ready queue, returns error code if any 
+
     return errCode;
-
-    // //fgets(line, MAX_USER_INPUT - 1, p);
-    // while (fgets(line, MAX_USER_INPUT - 1, p) != NULL) {
-    //     errCode = parseInput(line);     // which calls interpreter()
-    //     memset(line, 0, sizeof(line));
-
-    //     if (feof(p)) {
-    //         break;
-    //     }
-    // }
-
-    // fclose(p);
-
-    // return errCode;
 }
 
 int echo (char *text) 
@@ -378,8 +355,7 @@ int my_cd(char *dirname){
     return 0; // operation is successful
 }
 
-//3h
- int exec(char *scriptsAndPolicy[], int numOfArgs){
+int exec(char *scriptsAndPolicy[], int numOfArgs){
 
      // Identify flags
      int endIndex = numOfArgs-1;
@@ -391,7 +367,6 @@ int my_cd(char *dirname){
      if ((strcmp(scriptsAndPolicy[endIndex], "#") == 0)){
          backgroundFlag = 1;
          endIndex--;
-
      }
 
      // Identify policy
@@ -418,7 +393,6 @@ int my_cd(char *dirname){
 
      // initialize variables
      PCB* processArray[numOfProgs]; // create process for file in memory
-     //int processSizeArray[numOfProgs];
 
      // First load everything
      for (int counter=0; numOfProgs > counter; counter++){
@@ -435,13 +409,10 @@ int my_cd(char *dirname){
          fclose(p);
 
          if (load != 0) {
-             // FEATURE : CLEAR MEMORY
-             // OPTIONAL: free the array of pcbs....
              clearMemory();
              return badcommandFileDoesNotExist();
          }
          processArray[counter] = createPCB(fileIndex, length);
-         // processSizeArray[counter] = length; // For SJF
 
          pthread_mutex_lock(&lock);
          active_jobs++; // Increment here for each unique script
@@ -476,22 +447,24 @@ int my_cd(char *dirname){
      return code; // if background flag is on we don't run the scheduler so we return 0 for success
  }
 
-int batchScriptProcess(int *fileIndex, int *len) {
-
+int batchScriptProcess(int *fileIndex, int *len) 
+{
     FILE *temp = tmpfile();
-    if (temp == NULL) return -1;
+    if (temp == NULL) 
+    {
+            return -1;
+    }
 
     char line[MAX_USER_INPUT];
 
-    while (fgets(line, MAX_USER_INPUT - 1, stdin) != NULL) {
+    while (fgets(line, MAX_USER_INPUT - 1, stdin) != NULL) 
+    {
         fputs(line, temp);
     }
 
     rewind(temp);
-
     int result = loadFileMemory(temp, fileIndex, len);
     fclose(temp);
-
     return result;
 }
 

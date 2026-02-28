@@ -28,11 +28,10 @@ void* manageThread(void *args);
 
 int scheduler()
 {
-    // printf("[DEBUG] Entered Scheduler. MT Mode: %d, active_jobs: %d\n", mtFlag, active_jobs);
     int errCode = 0;
     if (strcmp(policy, "RR30") == 0) maxInstructionsRR = 30;
     int maxInstructionsAging = 1; // for AGING
-    if (!mtFlag){
+    if (!mtFlag){ // not multithreading
         while (head != NULL)
         {
             PCB* current = head; /// pop head of queue
@@ -41,7 +40,6 @@ int scheduler()
             {
                 tail = NULL;
             }
-            //printf("Running process with PID: %d\n", current->pid); // DEBUG
 
             if (strcmp(policy, "RR") == 0 || strcmp(policy, "RR30") == 0)
             {
@@ -87,7 +85,7 @@ int scheduler()
                 {
                     if (temp->score > 0)
                     {
-                        temp->score--;// decrement score of all processes in ready queue
+                        temp->score--; // decrement score of all processes in ready queue
                     }
                     temp = temp->next;
                 }
@@ -139,7 +137,6 @@ int scheduler()
     }
     else{
         // Create threads
-        // printf("[DEBUG] Initializing threads for the first time...\n");
         pthread_mutex_lock(&lock);
         if (!threadsInitialized){
             threadsInitialized++;
@@ -147,39 +144,24 @@ int scheduler()
             pthread_create(&t2, NULL, manageThread, NULL);
         }
         pthread_mutex_unlock(&lock);
-        // printf("[DEBUG] Number of threads running: %d\n", threadsInitialized);
-        pthread_mutex_lock(&lock); // ADDED LOCK
+
+        pthread_mutex_lock(&lock);
         pthread_cond_broadcast(&queue_not_empty); 
         pthread_mutex_unlock(&lock);
 
-//WAS COMMENTED
         if (backgroundFlag == 0) { 
-            int floor = pthread_equal(pthread_self(), mainThreadID) ? 0 : 1;
+            int floor = pthread_equal(pthread_self(), mainThreadID) ? 0 : 1; // main thread waits for all jobs to finish, worker thread only waits for jobs added while it is running
             pthread_mutex_lock(&lock);
             while (active_jobs > floor) 
             {
                 pthread_cond_wait(&queue_not_empty, &lock);
             }
-            // while (active_jobs > 0) { //} && pthread_equal(pthread_self(), mainThreadID)) { // only wait if we are in the main thread and there are active jobs
-            //     // printf("[DEBUG] Thread %lu waiting for active_jobs to reach 0 (Current: %d)\n", (unsigned long)pthread_self(), active_jobs);
-            //     // Wait for worker threads to signal that active_jobs reached 0
-            //     pthread_cond_wait(&queue_not_empty, &lock);
-            // }
             pthread_mutex_unlock(&lock);
-
-            // In foreground mode, we can clear memory once jobs are done
-            //clearMemory();
         }
 
-// WAS COMMENTED
-        // printf("[DEBUG] Broadcasting to threads and returning to interpreter...\n");
         pthread_mutex_lock(&lock);
         pthread_cond_broadcast(&queue_not_empty);
         pthread_mutex_unlock(&lock);
-        //pthread_mutex_unlock(&lock);
-
-
-        // Process is RR or RR30
     }
     return errCode;
 }
@@ -187,7 +169,6 @@ int scheduler()
 void addToReadyQueue(PCB* process)
 {
     pthread_mutex_lock(&lock);
-    //active_jobs++;
     process->next = NULL;
 
     if (strcmp(policy, "SJF") == 0)
@@ -275,17 +256,13 @@ bool isReadyQueueEmpty()
 }
 
 void* manageThread(void *args){
-    // printf("[DEBUG] Thread spawned and alive!\n");
     int errCode = 0;
     while (1){ // as RR keeps adding to queue and we have 2 threads we cannot terminate thread on HEAD!= NULL
         pthread_mutex_lock(&lock); //lock queeue before checking
 
-        printf("[DEBUG] Manage thread -> active jobs: %d\n", active_jobs);
         while (head == NULL && active_jobs > 0 && !shutting_down) { // if queue is empty, wait for signal that it's not empty or that we are shutting down
             pthread_cond_wait(&queue_not_empty, &lock);
         } 
-
-        printf("[DEBUG] Manage thread -> exited waiting while loop. Active jobs: %d\n", active_jobs);
 
         if (shutting_down || (active_jobs == 0 && head == NULL) )
         { 
@@ -293,12 +270,9 @@ void* manageThread(void *args){
             break;
         }
 
-        
-
         PCB* current = head; /// pop head of queue
 
         //iterate through queue
-
         head = head->next;
         if (head == NULL)
         {
@@ -324,15 +298,7 @@ void* manageThread(void *args){
         {
             addToReadyQueue(current);
         }
-        // else // free memory
-        // {
-        //     pthread_mutex_lock(&lock);
-        //     active_jobs--;
-        //     // // printf("[DEBUG] Decremented active_jobs. Current: %d\n", active_jobs);
-        //     pthread_cond_broadcast(&queue_not_empty);
-        //     pthread_mutex_unlock(&lock);
-        //     free(current);
-        // }
+
         else 
         { 
             // PCB is finished
@@ -349,5 +315,4 @@ void* manageThread(void *args){
             pthread_mutex_unlock(&lock);
         }
     }
-    // printf("[DEBUG] THREAD %lu: Job finished. Remaining active_jobs: %d\n", (unsigned long)pthread_self(), active_jobs);
 }
