@@ -166,6 +166,9 @@ source SCRIPT.TXT	Executes the file SCRIPT.TXT\n ";
 }
 
 int quit() {
+    printf("Bye!\n");
+    fflush(stdout);
+    printf("[DEBUG] Decrementing for the last job - quit");
     active_jobs--;
     printf("[DEBUG] Quit called. MT: %d, Active Jobs: %d, decremented active jobs\n", mtFlag, active_jobs);
     pthread_mutex_lock(&lock);
@@ -200,8 +203,8 @@ int quit() {
         clearMemory();
         printf("[DEBUG] Memory cleared.\n");
     }
-    printf("Bye!\n");
-    fflush(stdout);
+    //printf("Bye!\n");
+    // fflush(stdout);
     exit(0);
 }
 

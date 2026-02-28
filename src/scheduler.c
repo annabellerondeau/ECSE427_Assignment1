@@ -154,12 +154,17 @@ int scheduler()
 
 //WAS COMMENTED
         if (backgroundFlag == 0) { 
+            int floor = pthread_equal(pthread_self(), mainThreadID) ? 0 : 1;
             pthread_mutex_lock(&lock);
-            while (active_jobs > 0) { //} && pthread_equal(pthread_self(), mainThreadID)) { // only wait if we are in the main thread and there are active jobs
-                // printf("[DEBUG] Thread %lu waiting for active_jobs to reach 0 (Current: %d)\n", (unsigned long)pthread_self(), active_jobs);
-                // Wait for worker threads to signal that active_jobs reached 0
+            while (active_jobs > floor) 
+            {
                 pthread_cond_wait(&queue_not_empty, &lock);
             }
+            // while (active_jobs > 0) { //} && pthread_equal(pthread_self(), mainThreadID)) { // only wait if we are in the main thread and there are active jobs
+            //     // printf("[DEBUG] Thread %lu waiting for active_jobs to reach 0 (Current: %d)\n", (unsigned long)pthread_self(), active_jobs);
+            //     // Wait for worker threads to signal that active_jobs reached 0
+            //     pthread_cond_wait(&queue_not_empty, &lock);
+            // }
             pthread_mutex_unlock(&lock);
 
             // In foreground mode, we can clear memory once jobs are done
