@@ -6,16 +6,17 @@
 #include "scheduler.h"
 #include "shellmemory.h"
 #include "shell.h"
+#include "pcb.h"
 
 struct memory_struct {
     char *var;
     char *value;
 };
 
-struct memory_struct shellmemory[MEM_SIZE];
+struct memory_struct shellmemory[VARIABLE_STORE_SIZE]; // variable store
 
-char * code_memory[MEM_SIZE]; // holds lines of code from file for source command
-int memoryIndex = 0; // where we are in memeory when loading lines for source
+char * code_memory[FRAME_STORE_SIZE * 3]; // frame store, is an array of frames of 3 lines each (multiply by 3 to get the total num of lines)
+//int memoryIndex = 0; // where we are in memeory when loading lines for source NO LONGER NEEDED for A3
 
 // Helper functions
 int match(char *model, char *var) {
@@ -83,31 +84,53 @@ char *mem_get_value(char *var_in) {
 }
 
 // load file into memory and return starting index and length of file in memory
-int loadFileMemory(FILE *p, int *fileIndex, int *length) 
+int loadFileMemory(FILE *p, PCB *pcb) 
 {
     pthread_mutex_lock(&lock);
     char line[MAX_USER_INPUT];
-    *fileIndex = memoryIndex; // start loading file at current memory index
+
     int counter = 0;
+
+    int pageLine = 0; // track line in the script file
+    int pageNumber = 0; // track page we are filling for this specific process (the page in the page table attribute of the pcb struct)
+    int frameIndex = -1; // physical frame number in code_memory
 
     while (fgets(line, MAX_USER_INPUT - 1, p) != NULL) 
     {
-        if (memoryIndex >= 1000) 
+        if (pageLine % 3 == 0) // if the frame is full 
         {
-            pthread_mutex_unlock(&lock);
-            return -1; // full memory error
+            frameIndex = findFreeFrame();
+            if (frameIndex == -1) // no free frame
+            {            
+                pthread_mutex_unlock(&lock);
+                return -1; // full memory error
+            }
+            pcb->pageTable[pageNumber] = frameIndex; // sets the frame number of the pcb table for this page
+            pageNumber++;
         }
 
         line[strcspn(line, "\r\n")] = 0;
-        code_memory[memoryIndex] = strdup(line);
+        int physicalLine = (frameIndex * 3) + (pageLine % 3); //computethe actual physical line
+        code_memory[physicalLine] = strdup(line);
 
-        memoryIndex++; // increment next free slot in memory
-        counter++; // increment counter for length of file in memory
+        pageLine++;
     }
 
-    *length = counter; // length of file is number of lines read
+    pcb->totalPages = pageNumber;
     pthread_mutex_unlock(&lock);
     return 0; // success
+}
+
+int findFreeFrame()
+{
+    for (int i = 0; i < FRAME_STORE_SIZE; i++)
+    {
+        if (code_memory[i*3] == NULL) // if the frame if free
+        {
+            return i;
+        }
+    }
+    return -1; // no free frames left
 }
 
 char* mem_get_code_line(int index) // getter for code memory
@@ -137,6 +160,6 @@ void clearMemory() // clear code memory
             code_memory[i] = NULL;
         }
     }
-    memoryIndex = 0;
+    //memoryIndex = 0;
     pthread_mutex_unlock(&lock);
 }

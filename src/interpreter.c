@@ -31,7 +31,7 @@ int isAlphaNumeric(char word[]);
 int tokenEnding(char c);
 int prioritization(const void *c1, const void *c2);
 int exec(char **scriptsAndPolicy, int numOfArgs);
-int batchScriptProcess(int *fileIndex, int *len);
+int batchScriptProcess(PCB *pcb);
 int backgroundFlag =0;
 int mtFlag=0;
 void addToReadyQueueFront(PCB* pcb);
@@ -228,10 +228,12 @@ int source(char *script) {
         return badcommandFileDoesNotExist();
     }
 
-    int fileIndex;
-    int length; 
+    //int fileIndex;
+    //int length; 
 
-    int load = loadFileMemory(p, &fileIndex, &length); // load file into memory
+    PCB* process = createPCB(); // create process for file in memory
+
+    int load = loadFileMemory(p, process); // load file into memory
     fclose(p);
 
     if (load != 0) { // fix: error message ?
@@ -239,7 +241,6 @@ int source(char *script) {
         return badcommandFileDoesNotExist();
     }
 
-    PCB* process = createPCB(fileIndex, length); // create process for file in memory
     addToReadyQueue(process); // add process to ready queue
 
     errCode = scheduler(); // run processes in ready queue, returns error code if any 
@@ -357,97 +358,123 @@ int my_cd(char *dirname){
 
 int exec(char *scriptsAndPolicy[], int numOfArgs){
 
-     // Identify flags
-     int endIndex = numOfArgs-1;
+    // Identify flags
+    int endIndex = numOfArgs-1;
 
-     if ((strcmp(scriptsAndPolicy[endIndex], "MT") == 0)){
-         mtFlag = 1; // remains enabled for duration of test case
-         endIndex--;
-     }
-     if ((strcmp(scriptsAndPolicy[endIndex], "#") == 0)){
-         backgroundFlag = 1;
-         endIndex--;
-     }
+    if ((strcmp(scriptsAndPolicy[endIndex], "MT") == 0)){
+        mtFlag = 1; // remains enabled for duration of test case
+        endIndex--;
+    }
+    if ((strcmp(scriptsAndPolicy[endIndex], "#") == 0)){
+        backgroundFlag = 1;
+        endIndex--;
+    }
 
-     // Identify policy
-     policy = scriptsAndPolicy[endIndex];
+    // Identify policy
+    policy = scriptsAndPolicy[endIndex];
 
-     if ((strcmp(policy, "FCFS") != 0) && (strcmp(policy, "SJF") != 0) // Validate Policy
-         && (strcmp(policy, "RR") != 0) && (strcmp(policy, "AGING") != 0)
-         && (strcmp(policy, "RR30") != 0)) {
-         printf("%s\n", "ERROR: Policy must be one of FCFS/SJF/RR(30)/AGING");
-         return 1;
-     }
+    if ((strcmp(policy, "FCFS") != 0) && (strcmp(policy, "SJF") != 0) // Validate Policy
+        && (strcmp(policy, "RR") != 0) && (strcmp(policy, "AGING") != 0)
+        && (strcmp(policy, "RR30") != 0)) {
+        printf("%s\n", "ERROR: Policy must be one of FCFS/SJF/RR(30)/AGING");
+        return 1;
+    }
 
-     // Identify scripts
-     int numOfProgs = endIndex;
-     char *scripts[numOfProgs];
-     for (int i=0; i<numOfProgs; i++){
-          scripts[i] = scriptsAndPolicy[i];
-          for(int j=0; j<i; j++)
-             if (strcmp(scripts[i], scripts[j]) == 0){
-                 printf("%s\n", "ERROR: No duplicate scripts allowed ):");
-                 return 1;
-             }
+    // Identify scripts
+    int numOfProgs = endIndex;
+    char *scripts[numOfProgs];
+    for (int i=0; i<numOfProgs; i++){
+        scripts[i] = scriptsAndPolicy[i]; // why do we do this............
+        //   for(int j=0; j<i; j++)
+        //      if (strcmp(scripts[i], scripts[j]) == 0){
+        //         // commented out as 2 same scripts is now allowed but must share the same memory
+        //          printf("%s\n", "ERROR: No duplicate scripts allowed ):");
+        //          return 1;
+        //      }
      }
 
      // initialize variables
-     PCB* processArray[numOfProgs]; // create process for file in memory
+    PCB* processArray[numOfProgs]; // create process for file in memory
 
      // First load everything
-     for (int counter=0; numOfProgs > counter; counter++){
-         FILE *p = fopen(scripts[counter], "rt");      // the program is in a file
+    for (int counter=0; counter < numOfProgs ; counter++){
+        PCB* process = createPCB();
+        //int fileIndex;
+        //int length;
+        int fileLoaded = 0; // will be set to 1 if the script is already loaded in mem
 
-         if (p == NULL) {
-             return badcommandFileDoesNotExist();
-         }
+        for (int i = 0; i < counter; i++ ) // use the same index in memory if the script is already loaded
+        {
+            if (strcmp(scripts[counter], scripts[i]) == 0)
+            {
+                //fileIndex = processArray[i]->startIndex;
+                //length = processArray[i]->length;
+                memcpy(process->pageTable, processArray[i]->pageTable, sizeof(int) * 100);
+                process->totalPages = processArray[i]->totalPages;
+                fileLoaded = 1;
+                break;
+            }
+        }
+        
+        if (!fileLoaded)
+        {
+            FILE *p = fopen(scripts[counter], "rt");      // the program is in a file
 
-         int fileIndex;
-         int length;
+            if (p == NULL) {
+                return badcommandFileDoesNotExist();
+            }
 
-         int load = loadFileMemory(p, &fileIndex, &length); // load file into memory
-         fclose(p);
 
-         if (load != 0) {
-             clearMemory();
-             return badcommandFileDoesNotExist();
-         }
-         processArray[counter] = createPCB(fileIndex, length);
+            int load = loadFileMemory(p, process); // load file into memory
+            fclose(p);
 
-         pthread_mutex_lock(&lock);
-         active_jobs++; // Increment here for each unique script
-         pthread_mutex_unlock(&lock);
-     }
+            if (load != 0) {
+                clearMemory();
+                return badcommandFileDoesNotExist();
+            }
+        }
+
+        processArray[counter] = createPCB();
+
+        pthread_mutex_lock(&lock);
+        active_jobs++; // Increment here for each unique script
+        pthread_mutex_unlock(&lock);
+    }
 
      // Second add everything to queue
-     for (int counter=0; numOfProgs > counter; counter++){
-         addToReadyQueue(processArray[counter]); // add process to ready queue
-     }
+    for (int counter=0; numOfProgs > counter; counter++){
+        addToReadyQueue(processArray[counter]); // add process to ready queue
+    }
 
-     if (backgroundFlag == 1) {
+    if (backgroundFlag == 1) {
 
-         int fileIndex;
-         int length;
+        PCB* batchPCB = createPCB();
+        // int fileIndex;
+        // int length;
 
-         if (batchScriptProcess(&fileIndex, &length) == 0) {
+        if (batchScriptProcess(batchPCB) == 0) {
 
-            PCB* batchPCB = createPCB(fileIndex, length);
+            //PCB* batchPCB = createPCB(fileIndex, length);
 
             addToReadyQueueFront(batchPCB);   // IMPORTANT: head insertion
-
 
             pthread_mutex_lock(&lock);
             active_jobs++; // Increment here for each unique script
             pthread_mutex_unlock(&lock);
-         }
-     }
+        }
+        else
+        {
+            printf("Error occured while loading PCB in batch script process.");
+            free(batchPCB);
+        }
+    }
 
-     int code = scheduler(); // Scheduler clears memory
-     backgroundFlag = 0;
-     return code; // if background flag is on we don't run the scheduler so we return 0 for success
- }
+    int code = scheduler(); // Scheduler clears memory
+    backgroundFlag = 0;
+    return code; // if background flag is on we don't run the scheduler so we return 0 for success
+}
 
-int batchScriptProcess(int *fileIndex, int *len) 
+int batchScriptProcess(PCB* pcb) 
 {
     FILE *temp = tmpfile();
     if (temp == NULL) 
@@ -463,7 +490,7 @@ int batchScriptProcess(int *fileIndex, int *len)
     }
 
     rewind(temp);
-    int result = loadFileMemory(temp, fileIndex, len);
+    int result = loadFileMemory(temp, pcb);
     fclose(temp);
     return result;
 }

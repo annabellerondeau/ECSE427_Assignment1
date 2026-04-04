@@ -11,6 +11,7 @@ void addToReadyQueue(PCB* process);
 bool isReadyQueueEmpty();
 void insertSJF(PCB* process);
 void insertAGING(PCB* process);
+int computePhysicalIndex(PCB* process);
 
 // global variables
 extern char *policy;

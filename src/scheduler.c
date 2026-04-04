@@ -45,9 +45,10 @@ int scheduler()
             {
                 int instructionsCompleted = 0;
 
-                while (instructionsCompleted < maxInstructionsRR && current->pc < current->length) // while there are still commands and max of 2 has not been reached
+                while (instructionsCompleted < maxInstructionsRR && current->pc < current->totalPages) // while there are still commands and max of 2 has not been reached
                 {
-                    char *line = mem_get_code_line(current->startIndex + current->pc);
+                    int index = computePhysicalIndex(current);
+                    char *line = mem_get_code_line(index);
                     if (line != NULL)
                     {
                         errCode = parseInput(line);
@@ -56,7 +57,7 @@ int scheduler()
                     instructionsCompleted++;
                 }
 
-                if (current->pc < current->length) // if there are still commands in the script that have not been ran
+                if (current->pc < current->totalPages) // if there are still commands in the script that have not been ran
                 {
                     addToReadyQueue(current);
                 }
@@ -69,9 +70,10 @@ int scheduler()
             else if (strcmp(policy, "AGING") == 0)
             {
                 int instructionsCompleted = 0;
-                while (instructionsCompleted < maxInstructionsAging && current->pc < current->length)
+                while (instructionsCompleted < maxInstructionsAging && current->pc < current->totalPages)
                 {
-                    char *line = mem_get_code_line(current->startIndex + current->pc);
+                    int index = computePhysicalIndex(current);
+                    char *line = mem_get_code_line(index);
                     if (line != NULL)
                     {
                         errCode = parseInput(line);
@@ -90,7 +92,7 @@ int scheduler()
                     temp = temp->next;
                 }
 
-                if (current->pc < current->length) // if there are still commands in the script that have not been ran
+                if (current->pc < current->totalPages) // if there are still commands in the script that have not been ran
                 {
                     if (head != NULL && head->score < current->score)
                     {
@@ -114,9 +116,10 @@ int scheduler()
 
             else // FCFS or SJF
             {
-                while (current->pc < current->length) // while there are still commands to execute in the script
+                while (current->pc < current->totalPages) // while there are still commands to execute in the script
                 {
-                    int mem_index = current->startIndex + current->pc; // compute index in code memory
+
+                    int mem_index = computePhysicalIndex(current); // compute index in code memory
                     char* command = mem_get_code_line(mem_index); // get command from mem
                     if (command != NULL)
                     {
@@ -166,6 +169,18 @@ int scheduler()
     return errCode;
 }
 
+int computePhysicalIndex(PCB* process)
+{
+    int logicalLine = process->pc;
+    int pageNumber = logicalLine / 3; // page
+    int offset = logicalLine % 3; // line on the page
+    int frameNumber = process->pageTable[pageNumber];
+
+    int physicalIndex = (frameNumber * 3) + offset; // compute physical index
+    return physicalIndex;
+}
+
+
 void addToReadyQueue(PCB* process)
 {
     pthread_mutex_lock(&lock);
@@ -197,7 +212,7 @@ void addToReadyQueue(PCB* process)
 
 void insertSJF(PCB* process)
 {
-    if (head == NULL || process->length < head->length) // if length is shorter than head length, process becomes new head
+    if (head == NULL || process->totalPages < head->totalPages) // if length is shorter than head length, process becomes new head
     {
         process->next = head;
         head = process;
@@ -209,7 +224,7 @@ void insertSJF(PCB* process)
     else 
     {
         PCB* current = head;
-        while (current->next != NULL && current->next->length <= process->length) // order from shortest to longest length
+        while (current->next != NULL && current->next->totalPages <= process->totalPages) // order from shortest to longest length
         {
             current = current->next;
         }
@@ -283,9 +298,10 @@ void* manageThread(void *args){
         // check policy (ONLY RR or RR30)
         int instructionsCompleted = 0;
 
-        while (instructionsCompleted < maxInstructionsRR && current->pc < current->length) // while there are still commands and max of 2 has not been reached
+        while (instructionsCompleted < maxInstructionsRR && current->pc < current->totalPages) // while there are still commands and max of 2 has not been reached
         {
-            char *line = mem_get_code_line(current->startIndex + current->pc);
+            int index = computePhysicalIndex(current);
+            char *line = mem_get_code_line(index);
             if (line != NULL)
             {
                 errCode = parseInput(line);
@@ -294,7 +310,7 @@ void* manageThread(void *args){
             instructionsCompleted++;
         }
 
-        if (current->pc < current->length) // if there are still commands in the script that have not been ran
+        if (current->pc < current->totalPages) // if there are still commands in the script that have not been ran
         {
             addToReadyQueue(current);
         }
