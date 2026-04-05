@@ -331,4 +331,6 @@ void* manageThread(void *args){
             pthread_mutex_unlock(&lock);
         }
     }
+    
+    return NULL; // NEEDED TO COMPILE
 }

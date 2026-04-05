@@ -120,6 +120,10 @@ int interpreter(char *command_args[], int args_size) {
             wait(NULL); // wait for child to finish
             return 0;
         }
+        else { // NEEDED TO COMPILE
+            perror("fork failed");
+            return 1; 
+        }
 
     } else if (strcmp(command_args[0], "my_ls") == 0) {
         if (args_size != 1)

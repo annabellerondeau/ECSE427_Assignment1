@@ -1,6 +1,7 @@
 #define MAX_USER_INPUT 1000
 
 #include "pcb.h"
+#include <pthread.h>
 
 int parseInput(char inp[]);
 int loadFileMemory(FILE *p, PCB *pcb);
