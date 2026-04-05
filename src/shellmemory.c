@@ -122,6 +122,7 @@ int loadFileMemory(FILE *p, PCB *pcb)
 
     //printf("[DEBUG] Finished loading file into memory for PID %d with total lines %d and total pages %d\n", pcb->pid, pageLine, pageNumber);
     pcb->totalPages = pageNumber;
+    pcb->score = pageLine; // for aging, initialize score to length of script
     pthread_mutex_unlock(&lock);
     return 0; // success
 }
