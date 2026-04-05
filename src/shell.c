@@ -7,6 +7,15 @@
 #include "shellmemory.h"
 #include "scheduler.h"
 
+// Needed to compile, not actually used in the shell
+#ifndef MAX_FRAMES
+#define MAX_FRAMES 100
+#endif
+
+#ifndef MAX_VARIABLES
+#define MAX_VARIABLES 100
+#endif
+
 int parseInput(char ui[]);
 pthread_t mainThreadID;
 int mainThreadInitialized = 0;
@@ -14,7 +23,7 @@ int mainThreadInitialized = 0;
 // Start of everything
 int main(int argc, char *argv[]) {
     setvbuf(stdout, NULL, _IONBF, 0); // prevent buffering of printf output
-    printf("Shell version 1.5 created Dec 2025\n");
+    printf("Frame Store Size = %d; Variable Store Size = %d\n", MAX_FRAMES, MAX_VARIABLES);
 
     char prompt = '$';  				// Shell prompt
     char userInput[MAX_USER_INPUT];		// user's input stored here
