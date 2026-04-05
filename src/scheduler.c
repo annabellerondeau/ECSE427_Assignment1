@@ -45,11 +45,19 @@ int scheduler()
             {
                 int instructionsCompleted = 0;
 
-                while (instructionsCompleted < maxInstructionsRR && current->pc < current->totalPages) // while there are still commands and max of 2 has not been reached
+                //printf("[DEBUG]About to enter while loop for PID %d at Logical PC %d\n", current->pid, current->pc);
+                //printf("[DEBUG]Current policy is %s with max instructions %d and number of lines is %d\n", policy, maxInstructionsRR, current->totalPages * 3);
+                while (instructionsCompleted < maxInstructionsRR && current->pc < (current->totalPages * 3)) // while there are still commands and max of 2 has not been reached
                 {
+                    //printf("[DEBUG] While loop entered for PID %d at Logical PC %d\n", current->pid, current->pc);
                     int index = computePhysicalIndex(current);
                     char *line = mem_get_code_line(index);
-                    if (line != NULL)
+                    if (line == NULL|| strcmp(line, "none") == 0) // process is finished
+                    {
+                        current->pc = current->totalPages * 3;
+                        break;
+                    }
+                    else
                     {
                         errCode = parseInput(line);
                     }
@@ -57,7 +65,7 @@ int scheduler()
                     instructionsCompleted++;
                 }
 
-                if (current->pc < current->totalPages) // if there are still commands in the script that have not been ran
+                if (current->pc < (current->totalPages*3)) // if there are still commands in the script that have not been ran
                 {
                     addToReadyQueue(current);
                 }
@@ -70,11 +78,16 @@ int scheduler()
             else if (strcmp(policy, "AGING") == 0)
             {
                 int instructionsCompleted = 0;
-                while (instructionsCompleted < maxInstructionsAging && current->pc < current->totalPages)
+                while (instructionsCompleted < maxInstructionsAging && current->pc < (current->totalPages * 3))
                 {
                     int index = computePhysicalIndex(current);
                     char *line = mem_get_code_line(index);
-                    if (line != NULL)
+                    if (line == NULL|| strcmp(line, "none") == 0) // process is finished
+                    {
+                        current->pc = current->totalPages * 3;
+                        break;
+                    }
+                    else                    
                     {
                         errCode = parseInput(line);
                     }
@@ -92,7 +105,7 @@ int scheduler()
                     temp = temp->next;
                 }
 
-                if (current->pc < current->totalPages) // if there are still commands in the script that have not been ran
+                if (current->pc < (current->totalPages*3)) // if there are still commands in the script that have not been ran
                 {
                     if (head != NULL && head->score < current->score)
                     {
@@ -116,19 +129,19 @@ int scheduler()
 
             else // FCFS or SJF
             {
-                while (current->pc < current->totalPages) // while there are still commands to execute in the script
+                while (current->pc < (current->totalPages * 3)) // while there are still commands to execute in the script
                 {
 
                     int mem_index = computePhysicalIndex(current); // compute index in code memory
                     char* command = mem_get_code_line(mem_index); // get command from mem
-                    if (command != NULL)
+                    if (command == NULL|| strcmp(command, "none") == 0) // process is finished
                     {
-                        errCode = parseInput(command);
+                        current->pc = current->totalPages * 3;
+                        break;
                     }
                     else
                     {
-                        printf("Error: Command not found at memory index %d\n", mem_index);
-                        break;
+                        errCode = parseInput(command);
                     }
                     current->pc++;
                 }
@@ -136,7 +149,8 @@ int scheduler()
                 free(current);
             }
         }
-        clearMemory(); // only when ready queue is empty
+        // removed for A3
+        //clearMemory(); // only when ready queue is empty
     }
     else{
         // Create threads
@@ -177,6 +191,7 @@ int computePhysicalIndex(PCB* process)
     int frameNumber = process->pageTable[pageNumber];
 
     int physicalIndex = (frameNumber * 3) + offset; // compute physical index
+    //printf("[DEBUG] PID %d is accessing Logical PC %d at Physical Index %d\n", process->pid, process->pc, physicalIndex);
     return physicalIndex;
 }
 
@@ -302,7 +317,12 @@ void* manageThread(void *args){
         {
             int index = computePhysicalIndex(current);
             char *line = mem_get_code_line(index);
-            if (line != NULL)
+            if (line == NULL|| strcmp(line, "none") == 0) // process is finished
+            {
+                current->pc = current->totalPages * 3;
+                break;
+            }
+            else
             {
                 errCode = parseInput(line);
             }

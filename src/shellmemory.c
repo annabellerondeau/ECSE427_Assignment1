@@ -35,9 +35,13 @@ int match(char *model, char *var) {
 void mem_init(){
     pthread_mutex_lock(&lock); // locking and unlocking does not disrupt single threaded function
     int i;
-    for (i = 0; i < MEM_SIZE; i++){		
+    for (i = 0; i < VARIABLE_STORE_SIZE; i++){		
         shellmemory[i].var   = "none"; // FEATURE add later strdup( allows us to avoid crash if malloc is called on none node
         shellmemory[i].value = "none";
+    }
+    for (i=0; i < FRAME_STORE_SIZE * 3; i++)
+    {
+        code_memory[i] = NULL;
     }
     pthread_mutex_unlock(&lock);
 }
@@ -47,7 +51,7 @@ void mem_set_value(char *var_in, char *value_in) {
     pthread_mutex_lock(&lock);
     int i;
 
-    for (i = 0; i < MEM_SIZE; i++){
+    for (i = 0; i < VARIABLE_STORE_SIZE; i++){
         if (strcmp(shellmemory[i].var, var_in) == 0){
             shellmemory[i].value = strdup(value_in);
             pthread_mutex_unlock(&lock);
@@ -56,7 +60,7 @@ void mem_set_value(char *var_in, char *value_in) {
     }
 
     //Value does not exist, need to find a free spot.
-    for (i = 0; i < MEM_SIZE; i++){
+    for (i = 0; i < VARIABLE_STORE_SIZE; i++){
         if (strcmp(shellmemory[i].var, "none") == 0){
             shellmemory[i].var   = strdup(var_in);
             shellmemory[i].value = strdup(value_in);
@@ -73,7 +77,7 @@ char *mem_get_value(char *var_in) {
     pthread_mutex_lock(&lock); // ensures only 1 thread getting AND setting value simultaneously
     int i;
 
-    for (i = 0; i < MEM_SIZE; i++){
+    for (i = 0; i < VARIABLE_STORE_SIZE; i++){
         if (strcmp(shellmemory[i].var, var_in) == 0){
             pthread_mutex_unlock(&lock);
             return strdup(shellmemory[i].value);
@@ -116,6 +120,7 @@ int loadFileMemory(FILE *p, PCB *pcb)
         pageLine++;
     }
 
+    //printf("[DEBUG] Finished loading file into memory for PID %d with total lines %d and total pages %d\n", pcb->pid, pageLine, pageNumber);
     pcb->totalPages = pageNumber;
     pthread_mutex_unlock(&lock);
     return 0; // success
@@ -130,6 +135,7 @@ int findFreeFrame()
             return i;
         }
     }
+    printf("Error: No free frames available in memory.\n");
     return -1; // no free frames left
 }
 

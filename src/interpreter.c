@@ -438,7 +438,8 @@ int exec(char *scriptsAndPolicy[], int numOfArgs){
             }
         }
 
-        processArray[counter] = createPCB();
+        //processArray[counter] = createPCB();
+        processArray[counter] = process;
 
         pthread_mutex_lock(&lock);
         active_jobs++; // Increment here for each unique script

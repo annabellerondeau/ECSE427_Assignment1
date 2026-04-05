@@ -36,7 +36,7 @@ testA2: mysh
                     if [ $$? -eq 0 ]; then echo "$$t: PASS"; \
                     else \
                         echo "$$t: FAIL";\
-                        diff -y result.tmp $${t}_result.txt; \
+                        # diff -y result.tmp $${t}_result.txt; \
                     fi; \
                 else \
                     diff -w -q ../test-cases/result.tmp ../test-cases/$${t}_result.txt > /dev/null; \
