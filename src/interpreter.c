@@ -236,9 +236,11 @@ int source(char *script) {
     //int length; 
 
     PCB* process = createPCB(); // create process for file in memory
+    process->fp = p; // assign file pointer to PCB attribute
+    process->filename = strdup(script); // assign filename to PCB attribute
 
-    int load = loadFileMemory(p, process); // load file into memory
-    fclose(p);
+    int load = initialDemandLoading(process);
+    //int load = loadFileMemory(p, process); // load file into memory
 
     if (load != 0) { // fix: error message ?
         printf("Error trying to load the file into memory \n");
@@ -423,14 +425,16 @@ int exec(char *scriptsAndPolicy[], int numOfArgs){
         if (!fileLoaded)
         {
             FILE *p = fopen(scripts[counter], "rt");      // the program is in a file
+            process->fp = p; // assign file pointer to PCB attribute
+            process->filename = strdup(scripts[counter]); // assign filename to PCB attribute
 
             if (p == NULL) {
                 return badcommandFileDoesNotExist();
             }
 
+            int load = initialDemandLoading(process);
 
-            int load = loadFileMemory(p, process); // load file into memory
-            fclose(p);
+            //int load = loadFileMemory(p, process); // load file into memory
 
             if (load != 0) {
                 clearMemory();

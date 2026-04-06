@@ -2,8 +2,12 @@ CC=gcc
 CFLAGS=
 FMT=indent
 
-mysh: shell.c interpreter.c shellmemory.c pcb.o scheduler.o
-	$(CC) $(CFLAGS) -c shell.c interpreter.c shellmemory.c pcb.c scheduler.c
+# Default values for now
+framesize ?= 18
+varmemsize ?= 10
+
+mysh: shell.c interpreter.c shellmemory.c pcb.c scheduler.c # potential error
+	$(CC) $(CFLAGS) -D framesize=$(framesize) -D varmemsize=$(varmemsize) -c shell.c interpreter.c shellmemory.c pcb.c scheduler.c
 	$(CC) $(CFLAGS) -pthread -o mysh shell.o interpreter.o shellmemory.o pcb.o scheduler.o
 
 style: shell.c shell.h interpreter.c interpreter.h shellmemory.c shellmemory.h

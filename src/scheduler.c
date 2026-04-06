@@ -11,7 +11,7 @@
 
 PCB* head = NULL;
 PCB* tail = NULL;
-char *policy = "FCFS"; // default policy is FCFS, can be changed by exec command
+char *policy = "RR"; // default policy is FCFS, can be changed by exec command
 int maxInstructionsRR = 2; // for RR
 
 pthread_t t1;
@@ -19,6 +19,8 @@ pthread_t t2;
 int threadsInitialized = 0;
 int active_jobs = 0;
 int shutting_down = 0; // flag to signal threads to exit when quit is called
+int didThePageFault = 0;  // flag to indicate whether page fault resulted in victim page being evicted
+
 
 //global MT controls
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
@@ -41,31 +43,49 @@ int scheduler()
                 tail = NULL;
             }
 
+            // Assignment 3 focuses on Round Robin STRICTLY
+            int pageFaultTriggered = 0; // not triggered
+            int frameIndex=0;
+
             if (strcmp(policy, "RR") == 0 || strcmp(policy, "RR30") == 0)
             {
                 int instructionsCompleted = 0;
 
-                //printf("[DEBUG]About to enter while loop for PID %d at Logical PC %d\n", current->pid, current->pc);
-                //printf("[DEBUG]Current policy is %s with max instructions %d and number of lines is %d\n", policy, maxInstructionsRR, current->totalPages * 3);
                 while (instructionsCompleted < maxInstructionsRR && current->pc < (current->totalPages * 3)) // while there are still commands and max of 2 has not been reached
                 {
+                    // CHECK: PAGE FAULT
+
+                    if (!isPageInMemory(current, current->pc / 3)){
+                        pageFaultTriggered = 1;
+                        loadPageToMemory(current, current->pc / 3); // load page to memory
+                        if (!didThePageFault) {
+                            printf("Page fault!\n");
+                        }
+                        break; // break out of loop to add process back to ready queue
+                    }
+
                     //printf("[DEBUG] While loop entered for PID %d at Logical PC %d\n", current->pid, current->pc);
                     int index = computePhysicalIndex(current);
-                    char *line = mem_get_code_line(index);
+                    
+                    char *line = mem_get_code_line(index); // get line from page frame
+
                     if (line == NULL|| strcmp(line, "none") == 0) // process is finished
                     {
                         current->pc = current->totalPages * 3;
                         break;
                     }
-                    else
+                    else // if line is executable
                     {
                         errCode = parseInput(line);
+                        setFrameTimestamp(current->pageTable[current->pc / 3]); // update timestamp
                     }
                     current->pc++;
                     instructionsCompleted++;
-                }
 
-                if (current->pc < (current->totalPages*3)) // if there are still commands in the script that have not been ran
+                }
+                //didThePageFault = 0; // reset flag for next time (not useful tho as it will always be a fault from now on)
+
+                if (pageFaultTriggered || current->pc < (current->totalPages*3)) // if there are still commands in the script that have not been ran
                 {
                     addToReadyQueue(current);
                 }
@@ -133,10 +153,10 @@ int scheduler()
                 {
 
                     int mem_index = computePhysicalIndex(current); // compute index in code memory
-                    char* command = mem_get_code_line(mem_index); // get command from mem
+                    char* command = mem_get_code_line(mem_index); // get command from memory
                     if (command == NULL|| strcmp(command, "none") == 0) // process is finished
                     {
-                        current->pc = current->totalPages * 3;
+                        current->pc = current-> totalPages * 3;
                         break;
                     }
                     else
@@ -144,6 +164,8 @@ int scheduler()
                         errCode = parseInput(command);
                     }
                     current->pc++;
+
+            
                 }
 
                 free(current);

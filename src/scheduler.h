@@ -12,6 +12,8 @@ bool isReadyQueueEmpty();
 void insertSJF(PCB* process);
 void insertAGING(PCB* process);
 int computePhysicalIndex(PCB* process);
+int isPageInMemory(PCB *pcb, int pageNumber);
+int didThePageFault;
 
 // global variables
 extern char *policy;
