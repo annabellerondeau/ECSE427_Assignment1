@@ -29,7 +29,6 @@ struct frame_to_page_table_mapping frame_to_page_table[framesize/3]; // frame to
 
 
 char * code_memory[framesize]; // frame store, is an array of frames of 3 lines each (multiply by 3 to get the total num of lines)
-//int memoryIndex = 0; // where we are in memeory when loading lines for source NO LONGER NEEDED for A3
 
 // Helper functions
 int match(char *model, char *var) {
@@ -141,7 +140,6 @@ int loadFileMemory(FILE *p, PCB *pcb)
         pageLine++;
     }
 
-    //printf("[DEBUG] Finished loading file into memory for PID %d with total lines %d and total pages %d\n", pcb->pid, pageLine, pageNumber);
     pcb->totalPages = pageNumber;
     pcb->score = pageLine; // for aging, initialize score to length of script
     pthread_mutex_unlock(&lock);
@@ -154,7 +152,6 @@ int findFreeFrame()
     {
         if (code_memory[i*3] == NULL) // if the frame if free
         {
-            // printf("[DEBUG] Found free frame at index %d\n", i);
             return i;
         }
     }
@@ -163,9 +160,6 @@ int findFreeFrame()
     // no free frames will need to evict
 
     printf("Page fault! Victim page contents:\n\n");
-
-    // find frame with oldest time stamp
-    //int frameToEvict = rand() % (framesize/3); // randomly select a frame to evict
     
     int frameToEvict = 0; // randomly select a frame to evict
     int oldestTimeStamp = frame_to_page_table[0].timeStamp;
@@ -180,7 +174,7 @@ int findFreeFrame()
     }
 
     frame_to_page_table[frameToEvict].pcb->pageTable[frame_to_page_table[frameToEvict].pageNumber] = -1; // update page table of the process that owned the evicted page to indicate page is no longer in memory
-    // printf("[DEBUG] Evicting frame %d which belongs to PID %d, file name %s and page number %d\n", frameToEvict, frame_to_page_table[frameToEvict].pcb->pid, frame_to_page_table[frameToEvict].pcb->filename, frame_to_page_table[frameToEvict].pageNumber);
+
     for (int j = 0; j < 3; j++)
     {
         char *line = code_memory[j + (frameToEvict * 3)];
@@ -223,7 +217,6 @@ void clearMemory() // clear code memory
             code_memory[i] = NULL;
         }
     }
-    //memoryIndex = 0;
     pthread_mutex_unlock(&lock);
 }
 

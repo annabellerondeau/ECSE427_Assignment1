@@ -232,17 +232,13 @@ int source(char *script) {
         return badcommandFileDoesNotExist();
     }
 
-    //int fileIndex;
-    //int length; 
-
     PCB* process = createPCB(); // create process for file in memory
     process->fp = p; // assign file pointer to PCB attribute
     process->filename = strdup(script); // assign filename to PCB attribute
 
     int load = initialDemandLoading(process);
-    //int load = loadFileMemory(p, process); // load file into memory
 
-    if (load != 0) { // fix: error message ?
+    if (load != 0) { 
         printf("Error trying to load the file into memory \n");
         return badcommandFileDoesNotExist();
     }
@@ -390,13 +386,7 @@ int exec(char *scriptsAndPolicy[], int numOfArgs){
     int numOfProgs = endIndex;
     char *scripts[numOfProgs];
     for (int i=0; i<numOfProgs; i++){
-        scripts[i] = scriptsAndPolicy[i]; // why do we do this............
-        //   for(int j=0; j<i; j++)
-        //      if (strcmp(scripts[i], scripts[j]) == 0){
-        //         // commented out as 2 same scripts is now allowed but must share the same memory
-        //          printf("%s\n", "ERROR: No duplicate scripts allowed ):");
-        //          return 1;
-        //      }
+        scripts[i] = scriptsAndPolicy[i]; 
      }
 
      // initialize variables
@@ -405,16 +395,12 @@ int exec(char *scriptsAndPolicy[], int numOfArgs){
      // First load everything
     for (int counter=0; counter < numOfProgs ; counter++){
         PCB* process = createPCB();
-        //int fileIndex;
-        //int length;
         int fileLoaded = 0; // will be set to 1 if the script is already loaded in mem
 
         for (int i = 0; i < counter; i++ ) // use the same index in memory if the script is already loaded
         {
             if (strcmp(scripts[counter], scripts[i]) == 0)
             {
-                //fileIndex = processArray[i]->startIndex;
-                //length = processArray[i]->length;
                 memcpy(process->pageTable, processArray[i]->pageTable, sizeof(int) * 100);
                 process->totalPages = processArray[i]->totalPages;
                 fileLoaded = 1;
@@ -434,15 +420,12 @@ int exec(char *scriptsAndPolicy[], int numOfArgs){
 
             int load = initialDemandLoading(process);
 
-            //int load = loadFileMemory(p, process); // load file into memory
-
             if (load != 0) {
                 clearMemory();
                 return badcommandFileDoesNotExist();
             }
         }
 
-        //processArray[counter] = createPCB();
         processArray[counter] = process;
 
         pthread_mutex_lock(&lock);
@@ -458,12 +441,8 @@ int exec(char *scriptsAndPolicy[], int numOfArgs){
     if (backgroundFlag == 1) {
 
         PCB* batchPCB = createPCB();
-        // int fileIndex;
-        // int length;
 
         if (batchScriptProcess(batchPCB) == 0) {
-
-            //PCB* batchPCB = createPCB(fileIndex, length);
 
             addToReadyQueueFront(batchPCB);   // IMPORTANT: head insertion
 

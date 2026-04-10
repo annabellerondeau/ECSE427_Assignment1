@@ -13,9 +13,9 @@ void insertSJF(PCB* process);
 void insertAGING(PCB* process);
 int computePhysicalIndex(PCB* process);
 int isPageInMemory(PCB *pcb, int pageNumber);
-int didThePageFault;
 
 // global variables
+extern int didThePageFault;
 extern char *policy;
 extern int mtFlag;
 extern int backgroundFlag;

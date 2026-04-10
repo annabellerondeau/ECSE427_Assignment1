@@ -64,7 +64,6 @@ int scheduler()
                         break; // break out of loop to add process back to ready queue
                     }
 
-                    //printf("[DEBUG] While loop entered for PID %d at Logical PC %d\n", current->pid, current->pc);
                     int index = computePhysicalIndex(current);
                     
                     char *line = mem_get_code_line(index); // get line from page frame
@@ -83,7 +82,6 @@ int scheduler()
                     instructionsCompleted++;
 
                 }
-                //didThePageFault = 0; // reset flag for next time (not useful tho as it will always be a fault from now on)
 
                 if (pageFaultTriggered || current->pc < (current->totalPages*3)) // if there are still commands in the script that have not been ran
                 {
@@ -171,8 +169,6 @@ int scheduler()
                 free(current);
             }
         }
-        // removed for A3
-        //clearMemory(); // only when ready queue is empty
     }
     else{
         // Create threads
@@ -213,7 +209,6 @@ int computePhysicalIndex(PCB* process)
     int frameNumber = process->pageTable[pageNumber];
 
     int physicalIndex = (frameNumber * 3) + offset; // compute physical index
-    //printf("[DEBUG] PID %d is accessing Logical PC %d at Physical Index %d\n", process->pid, process->pc, physicalIndex);
     return physicalIndex;
 }
 
@@ -373,6 +368,6 @@ void* manageThread(void *args){
             pthread_mutex_unlock(&lock);
         }
     }
-    
-    return NULL; // NEEDED TO COMPILE
+   
+    return NULL; 
 }

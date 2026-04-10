@@ -9,6 +9,6 @@ char* mem_get_code_line(int index);
 int loadFileMemory(FILE *p, PCB *pcb);
 int findFreeFrame();
 void clearMemory();
-int didThePageFault;
+extern int didThePageFault;
 int getFrameTimestamp(int frameIndex);
 int setFrameTimestamp(int frameIndex);
