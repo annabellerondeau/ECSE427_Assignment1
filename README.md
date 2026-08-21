@@ -1,6 +1,6 @@
-## ECSE 427 Assignment 3
-Clementine Ruiz 260299024  
-Annabelle Huynh-Rondeau 261112355  
+## Custom Operating System
+Clementine Ruiz   
+Annabelle Huynh-Rondeau   
 
 ## Compilation
 To compile, run the following command:  
